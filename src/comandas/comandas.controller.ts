@@ -9,7 +9,7 @@ export class ComandasController {
 
   @Post()
   create(@Body() createComandaDto: CreateComandaDto) {
-    return this.comandasService.create(createComandaDto);
+    return this.comandasService.crearComandaConProductos(createComandaDto);
   }
 
   @Get()
@@ -19,16 +19,27 @@ export class ComandasController {
 
   @Get(':id')
   findOne(@Param('id') id: number) {
-    return this.comandasService.findOne(id);
+    return this.comandasService.obtenerComandaConDetalles(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: number, @Body() updateComandaDto: UpdateComandaDto) {
-    return this.comandasService.update(+id, updateComandaDto);
+    return this.comandasService.update(id, updateComandaDto);
+  }
+
+  @Patch(':id/detalle/:detalleId')
+  updateDetalle(@Param('id') id: number, @Body() updateComandaDto: UpdateComandaDto) {
+    return this.comandasService.actualizarDetalleComanda(id, updateComandaDto); 
   }
 
   @Delete(':id')
   remove(@Param('id') id: number) {
-    return this.comandasService.remove(id);
+    return this.comandasService.eliminarComanda(id);
   }
+  
+  @Delete(':id/detalle/:detalleId')
+  removedetalle(@Param('detalleId') detalleId: number) {
+    return this.comandasService.eliminarDetalleComanda(detalleId);
+  }
+
 }

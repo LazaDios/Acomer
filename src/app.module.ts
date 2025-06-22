@@ -2,11 +2,13 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ComandasModule } from './comandas/comandas.module';
 import { ProductosModule } from './productos/productos.module';
+import { DetalleComandasModule } from './detalle_comandas/detalle_comandas.module';
 
 @Module({
   imports: [
     ComandasModule,
     ProductosModule,
+    DetalleComandasModule,
     TypeOrmModule.forRoot({
     type: 'mysql',
     host: 'localhost',
@@ -16,6 +18,7 @@ import { ProductosModule } from './productos/productos.module';
     database: 'restaurante',
     autoLoadEntities: true,
     synchronize: true,}),
+    
   ],
   controllers: [],
   providers: [],

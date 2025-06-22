@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { DetalleComanda } from "src/detalle_comandas/entities/detalle_comanda.entity";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Producto {
@@ -16,5 +17,9 @@ export class Producto {
 
     @Column()
     tipo_producto: string;
+
+    // Relación inversa: Un Producto puede aparecer en muchos DetalleComanda
+    @OneToMany(() => DetalleComanda, (detalle) => detalle.producto)
+    detallesComanda: DetalleComanda[];
     
 }
