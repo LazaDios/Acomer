@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ComandasModule } from './comandas/comandas.module';
 import { ProductosModule } from './productos/productos.module';
-import { DetalleComandasModule } from './detalle_comandas/detalle_comandas.module';
+import { ComandasModule } from './comandas/comandas.module';
+import { DetalleComandasModule } from './detalle-comandas/detalle-comandas.module';
+
 
 @Module({
   imports: [
-    ComandasModule,
     ProductosModule,
+    ComandasModule,
     DetalleComandasModule,
     TypeOrmModule.forRoot({
     type: 'mysql',
@@ -17,7 +18,9 @@ import { DetalleComandasModule } from './detalle_comandas/detalle_comandas.modul
     password: 'root',
     database: 'restaurante',
     autoLoadEntities: true,
-    synchronize: true,}),
+    // Sincronización y DROP SCHEMA para desarrollo:
+    synchronize: true, // Sincroniza el esquema de la DB con las entidades
+  }),
     
   ],
   controllers: [],

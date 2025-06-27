@@ -22,8 +22,8 @@ export class ProductosService {
     return await this.productoRepository.find();
   }
 
-  async findOne(id: number) {
-    return await this.productoRepository.findOneBy({ id });
+  async findOne(id_producto: number) {
+    return await this.productoRepository.findOneBy({ id_producto});
   }
 
   async update(id: number, updateProductoDto: UpdateProductoDto) {

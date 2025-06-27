@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, HttpCode, HttpStatus } from '@nestjs/common';
 import { ComandasService } from './comandas.service';
 import { CreateComandaDto } from './dto/create-comanda.dto';
 import { UpdateComandaDto } from './dto/update-comanda.dto';
@@ -9,7 +9,7 @@ export class ComandasController {
 
   @Post()
   create(@Body() createComandaDto: CreateComandaDto) {
-    return this.comandasService.crearComandaConProductos(createComandaDto);
+    return this.comandasService.create(createComandaDto);
   }
 
   @Get()
@@ -19,7 +19,7 @@ export class ComandasController {
 
   @Get(':id')
   findOne(@Param('id') id: number) {
-    return this.comandasService.obtenerComandaConDetalles(id);
+    return this.comandasService.findOne(id);
   }
 
   @Patch(':id')
@@ -27,19 +27,9 @@ export class ComandasController {
     return this.comandasService.update(id, updateComandaDto);
   }
 
-  @Patch(':id/detalle/:detalleId')
-  updateDetalle(@Param('id') id: number, @Body() updateComandaDto: UpdateComandaDto) {
-    return this.comandasService.actualizarDetalleComanda(id, updateComandaDto); 
+ @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT) // 204 No Content es una respuesta común para eliminaciones exitosas
+  async remove(@Param('id', ParseIntPipe) comanda_id: number): Promise<void> {
+    await this.comandasService.remove(comanda_id);
   }
-
-  @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.comandasService.eliminarComanda(id);
-  }
-  
-  @Delete(':id/detalle/:detalleId')
-  removedetalle(@Param('detalleId') detalleId: number) {
-    return this.comandasService.eliminarDetalleComanda(detalleId);
-  }
-
 }

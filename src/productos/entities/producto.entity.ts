@@ -1,24 +1,18 @@
-import { DetalleComanda } from "src/detalle_comandas/entities/detalle_comanda.entity";
+import { DetalleComanda } from "src/detalle-comandas/entities/detalle-comanda.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Producto {
     @PrimaryGeneratedColumn()
-    id: number;
+    id_producto: number;
 
     @Column()
-    nombre: string;
-
-    @Column()
-    descripcion: string;
+    nombre_producto: string;
 
     @Column({ type: 'decimal', precision: 5, scale: 2 })
-    precio_unitario: number;
+    precio_producto: number;
 
-    @Column()
-    tipo_producto: string;
-
-    // Relación inversa: Un Producto puede aparecer en muchos DetalleComanda
+    //Relación inversa: Un Producto puede aparecer en muchos DetalleComanda
     @OneToMany(() => DetalleComanda, (detalle) => detalle.producto)
     detallesComanda: DetalleComanda[];
     
