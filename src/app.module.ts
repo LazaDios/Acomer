@@ -3,13 +3,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductosModule } from './productos/productos.module';
 import { ComandasModule } from './comandas/comandas.module';
 import { DetalleComandasModule } from './detalle-comandas/detalle-comandas.module';
-
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
     ProductosModule,
     ComandasModule,
     DetalleComandasModule,
+    EventsModule,
     TypeOrmModule.forRoot({
     type: 'mysql',
     host: 'localhost',
