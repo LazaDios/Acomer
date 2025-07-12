@@ -1,21 +1,48 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, ParseIntPipe } from '@nestjs/common';
+import { Controller,
+   Get, 
+   Post, 
+   Body, 
+   Patch, 
+   Param, 
+   Delete, 
+   HttpCode, 
+   HttpStatus, 
+   ParseIntPipe, 
+   Request, 
+   UseGuards, 
+   Logger 
+  } from '@nestjs/common';
 import { DetalleComandasService } from './detalle-comandas.service';
 import { CreateDetalleComandaDto, CreateMultipleDetallesDto } from './dto/create-detalle-comanda.dto';
 import { UpdateDetalleComandaDto } from './dto/update-detalle-comanda.dto';
 import { DetalleComanda } from './entities/detalle-comanda.entity';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { NombreRol } from 'src/auth/entities/rol.entity';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 
 @Controller('detalle-comandas')
 export class DetalleComandasController {
-  constructor(private readonly detalleComandasService: DetalleComandasService) {}
+  private readonly logger: Logger
+  constructor(
+    private readonly detalleComandasService: DetalleComandasService,
+  ) {
+    this.logger = new Logger(DetalleComandasController.name); // <-- Inicializa el logger aquí
+  }
+
 
 
   @Patch(':comandaId/:detalleId') // Usamos PATCH para actualizaciones parciales
   @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard, RolesGuard) // Aplica la guardia JWT y luego la guardia de Roles
+  @Roles(NombreRol.MESONERO, NombreRol.ADMINISTRADOR)
   async updateSingleDetalle(
     @Param('comandaId', ParseIntPipe) comandaId: number,
     @Param('detalleId', ParseIntPipe) detalleId: number,
     @Body() updateDetalleItemDto: UpdateDetalleComandaDto,
+    @Request() req, // Acceso al usuario autenticado para logging
   ) {
+    this.logger.log(`Usuario ${req.user.username} (Rol: ${req.user.rol.nombre}) intentando actualizar detalle ${detalleId} de comanda ${comandaId}.`);
     return this.detalleComandasService.updateSingleDetalleComanda(
       comandaId,
       detalleId,
@@ -24,15 +51,14 @@ export class DetalleComandasController {
   }
 
 
-
-
-
-
-
-
   @Post('') // Un nuevo endpoint para añadir múltiples detalles
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createMultipleDetallesDto: CreateMultipleDetallesDto): Promise<DetalleComanda[]> {
+  @UseGuards(JwtAuthGuard, RolesGuard) // Aplica la guardia JWT y luego la guardia de Roles
+  @Roles(NombreRol.MESONERO, NombreRol.ADMINISTRADOR)
+  async create(@Body() createMultipleDetallesDto: CreateMultipleDetallesDto,
+  @Request() req, // Acceso al usuario autenticado para logging
+  ): Promise<DetalleComanda[]> {
+    this.logger.log(`Usuario ${req.user.username} (Rol: ${req.user.rol.nombre}) intentando añadir múltiples detalles a comanda ${createMultipleDetallesDto.comandaId}.`);
     return this.detalleComandasService.create(createMultipleDetallesDto);
   }
   /*@Post()

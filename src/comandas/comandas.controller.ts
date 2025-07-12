@@ -1,17 +1,51 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import { 
+  Controller,
+  Get, 
+  Post, 
+  Body, 
+  Patch, 
+  Param, 
+  Delete, 
+  HttpCode, 
+  HttpStatus, 
+  NotFoundException, 
+  BadRequestException, 
+  Logger,
+  UseGuards, // <-- Importa UseGuards para aplicar las guardias
+  Request    // <-- Importa Request para acceder al objeto de la petición (y req.user)
+} from '@nestjs/common';
 import { ComandasService } from './comandas.service';
 import { CreateComandaDto } from './dto/create-comanda.dto';
 import { UpdateComandaDto } from './dto/update-comanda.dto';
 import { ComandaGateway } from 'src/events/comanda.gateway';
 import { EstadoComanda } from 'src/common/enums/comanda-estado.enum';
 
+// --- Importaciones de los módulos de autenticación/autorización ---
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { NombreRol } from 'src/auth/entities/rol.entity';
+
+
+
 @Controller('comandas')
+// Opcional: Si casi todas las rutas requieren autenticación, puedes aplicar JwtAuthGuard aquí a nivel de controlador.
+// Si lo haces, solo necesitarías RolesGuard en los métodos individuales si tienen restricciones de rol.
+// @UseGuards(JwtAuthGuard)
 export class ComandasController {
   constructor(private readonly comandasService: ComandasService) {}
-  private readonly logger = new Logger(ComandaGateway.name);
+  private readonly logger = new Logger(ComandaGateway.name); // Cambiado a ComandasController.name para mejor contexto del log
 
   @Post()
-  create(@Body() createComandaDto: CreateComandaDto) {
+  @HttpCode(HttpStatus.CREATED) // Asegurarse de que devuelve 201 en la creación
+  @UseGuards(JwtAuthGuard, RolesGuard) // Aplica la guardia JWT y luego la guardia de Roles
+  @Roles(NombreRol.MESONERO, NombreRol.ADMINISTRADOR) // Solo Mesoneros y Administradores pueden crear comandas
+  create(@Body() createComandaDto: CreateComandaDto, @Request() req) {
+    this.logger.log(`Usuario ${req.user.username} (Rol: ${req.user.rol.nombre}) está intentando crear una comanda.}`)
+    // Opcional: Podrías asignar el ID del mesonero que crea la comanda si es un campo en CreateComandaDto
+    // createComandaDto.idMesonero = req.user.id_usuario;
+    createComandaDto.nombre_mesonero = req.user.username;
+
     return this.comandasService.create(createComandaDto);
   }
 

@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import {IsNotEmpty, IsString } from "class-validator";
 
 export class CreateComandaDto {
 
@@ -7,7 +7,6 @@ export class CreateComandaDto {
     mesa : String;
 
     @IsString()
-    @IsNotEmpty()
-    nombre_mesonero: String;
+    nombre_mesonero = " ";
 
 }
