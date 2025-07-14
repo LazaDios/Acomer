@@ -20,6 +20,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { NombreRol } from 'src/auth/entities/rol.entity';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Comanda } from 'src/comandas/entities/comanda.entity';
 
 @Controller('detalle-comandas')
 export class DetalleComandasController {
@@ -87,4 +88,18 @@ export class DetalleComandasController {
   remove(@Param('id') id: string) {
     return this.detalleComandasService.remove(+id);
   }
+
+  
+  // --- ENDPOINT PARA EL DASHBOARD DEL COCINERO ---
+  @Get('cocinero/pendientes') // Ruta: GET /comandas/cocinero/pendientes
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(NombreRol.COCINERO, NombreRol.ADMINISTRADOR) // Solo Cocineros y Administradores pueden acceder
+  async getComandasForCocinero(): Promise<Comanda[]> {
+    this.logger.log(`Usuario (Cocinero/Admin) solicitando comandas pendientes para cocina.`);
+    // Llama al método del servicio para obtener estas comandas
+    return this.detalleComandasService.findComandasForCocineroDashboard();
+  }
+
+
+
 }

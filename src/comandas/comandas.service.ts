@@ -7,6 +7,8 @@ import { Repository } from 'typeorm';
 import { EstadoComanda } from 'src/common/enums/comanda-estado.enum';
 import { ComandaGateway } from 'src/events/comanda.gateway';
 
+
+
 @Injectable()
 export class ComandasService {
   private readonly logger = new Logger(ComandasService.name); //colocado nuevo para gateway
@@ -156,4 +158,5 @@ async softDelete(comanda_id: number): Promise<Comanda> {
 
     return comanda;
   }
+
 }

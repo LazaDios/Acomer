@@ -6,6 +6,7 @@ import { CreateDetalleComandaDto, CreateMultipleDetallesDto } from './dto/create
 import { Comanda } from '../comandas/entities/comanda.entity'; // Importa la entidad Comanda
 import { Producto } from '../productos/entities/producto.entity';
 import { UpdateDetalleComandaDto } from './dto/update-detalle-comanda.dto';
+import { EstadoComanda } from 'src/common/enums/comanda-estado.enum';
 
 @Injectable()
 export class DetalleComandasService {
@@ -225,6 +226,28 @@ private async recalculateComandaTotalMUCHAS(comanda_id: number): Promise<void> {
 
     return detalleActualizado;
   }
+
+    // --- MÉTODO PARA EL DASHBOARD DEL COCINERO ---
+  async findComandasForCocineroDashboard(): Promise<Comanda[]> {
+    // Definir los estados que le interesan al cocinero
+     const estadosCocinero: EstadoComanda[] = [
+      EstadoComanda.ABIERTA,
+      EstadoComanda.PREPARANDO,
+      EstadoComanda.CANCELADA, // Si el cocinero necesita ver las canceladas
+    ];
+
+    return this.comandaRepository.find({
+      where: {
+        estado_comanda: In(estadosCocinero),// Filtra las comandas por estos estados
+      },
+      relations:['detallesComanda', 'detallesComanda.producto'], // <-- ¡Asegúrate de que el nombre de la relación sea 'detalles' si así la tienes en Comanda.entity.ts!
+      order:{
+        comanda_id: 'ASC', // O 'fecha_creacion: 'ASC'' para ordenarlas por la más antigua primero
+      }
+    });
+    
+  }
+
 
 
 

@@ -27,7 +27,6 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { NombreRol } from 'src/auth/entities/rol.entity';
 
 
-
 @Controller('comandas')
 // Opcional: Si casi todas las rutas requieren autenticación, puedes aplicar JwtAuthGuard aquí a nivel de controlador.
 // Si lo haces, solo necesitarías RolesGuard en los métodos individuales si tienen restricciones de rol.
@@ -67,13 +66,17 @@ export class ComandasController {
     // --- NUEVO MÉTODO PARA ACTUALIZAR EL ESTADO ---
   @Patch(':id/status') // Ruta: /comandas/{id}/status
   @HttpCode(HttpStatus.OK) // Opcional: Código de estado 200 OK para actualizaciones exitosas
+  @UseGuards(JwtAuthGuard, RolesGuard) // Aplica la guardia JWT y luego la guardia de Roles
+  @Roles(NombreRol.MESONERO, NombreRol.ADMINISTRADOR, NombreRol.COCINERO) // Solo Mesoneros y Administradores pueden crear comandas
   async updateStatus(
     @Param('id') id: number, // Captura el ID de la URL
     @Body('estado') newStatus: EstadoComanda, // Captura solo la propiedad 'estado' del cuerpo de la petición
+    @Request() req, // Necesario para acceder a req.user
   ) {
+
     // Aquí puedes añadir validaciones adicionales si newStatus no es un EstadoComanda válido
     // o si el cliente envía un estado inválido. NestJS DTO validation con Pipes es ideal aquí.
-
+    this.logger.log(`Usuario ${req.user.username} (Rol: ${req.user.rol.nombre}) está intentando modificar el status de la comanda ${id} a ${newStatus} .}`)
     return this.comandasService.updateComandaStatus(id, newStatus);
   }
 
@@ -96,4 +99,5 @@ export class ComandasController {
       throw new Error('Error al cancelar la comanda.'); // O un HttpException más específico
     }
   }
+
 }
