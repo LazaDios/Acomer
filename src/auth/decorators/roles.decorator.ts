@@ -1,5 +1,4 @@
 //Crea este archivo para el decorador @Roles() que usarás para marcar qué roles pueden acceder a qué rutas.
-// src/auth/decorators/roles.decorator.ts
 import { SetMetadata } from '@nestjs/common';
 import { NombreRol } from '../entities/rol.entity'; // Importa el enum de roles
 

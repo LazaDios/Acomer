@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { DetalleComanda } from './entities/detalle-comanda.entity';
-import { CreateDetalleComandaDto, CreateMultipleDetallesDto } from './dto/create-detalle-comanda.dto'; // Necesitaremos este DTO
+import { /*CreateDetalleComandaDto,*/ CreateMultipleDetallesDto } from './dto/create-detalle-comanda.dto'; // Necesitaremos este DTO
 import { Comanda } from '../comandas/entities/comanda.entity'; // Importa la entidad Comanda
 import { Producto } from '../productos/entities/producto.entity';
 import { UpdateDetalleComandaDto } from './dto/update-detalle-comanda.dto';

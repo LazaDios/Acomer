@@ -1,8 +1,9 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { CreateDetalleComandaDto } from './create-detalle-comanda.dto';
+import { /*CreateDetalleComandaDto,*/ CreateMultipleDetallesDto } from './create-detalle-comanda.dto';
 import { IsInt, IsOptional, IsPositive, IsString, MaxLength, Min } from 'class-validator';
 
-export class UpdateDetalleComandaDto extends PartialType(CreateDetalleComandaDto) {
+
+export class UpdateDetalleComandaDto extends PartialType(CreateMultipleDetallesDto){
 
   @IsOptional() // Hacemos opcional para la creación, pero no para la actualización de uno existente
   @IsInt()
@@ -23,4 +24,5 @@ export class UpdateDetalleComandaDto extends PartialType(CreateDetalleComandaDto
   @IsString()
   @MaxLength(255)
   descripcion: "S/N";
+  
 }

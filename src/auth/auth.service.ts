@@ -95,8 +95,8 @@ export class AuthService {
       id_usuario: usuario.id_usuario,
       rol: usuario.rol.nombre, // Incluimos el nombre del rol en el token
     };
-
     this.logger.log(`Generando token JWT para el usuario: ${usuario.username}`);
+
     return {
       access_token: this.jwtService.sign(payload), // Firma el payload para crear el token
       usuario: {

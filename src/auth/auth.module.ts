@@ -28,7 +28,7 @@ import { Rol } from './entities/rol.entity';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: '60m' }, // O el tiempo de expiración que desees
+        signOptions: { expiresIn: '1d' }, // O el tiempo de expiración que desees
       }),
     }),
   ],

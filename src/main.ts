@@ -8,10 +8,13 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   // --- Configuración de Swagger ---
   const config = new DocumentBuilder()
-    .setTitle('API de Acomer') // Título de tu API
-    .setDescription('La descripción de la API para mi aplicación NestJS') // Descripción
+    .setTitle('ACOMER_V1 API')
+    .setDescription('Documentación de la API para la gestión de comandas del restaurante ACOMER_v1')
     .setVersion('1.0') // Versión de la API
-    .addTag('users') // Puedes añadir etiquetas para organizar tus endpoints
+    .addTag('auth', 'Operaciones de autenticación y autorización')
+    .addTag('comandas', 'Gestión de comandas y sus estados')
+    .addTag('detalle-comandas', 'Gestión de los detalles de las comandas (productos en la comanda)')
+    .addTag('productos', 'Gestión de productos del menú')
     .addBearerAuth( // Si usas JWT, esto añade un botón para autorizar con un token
       {
         type: 'http',
@@ -26,7 +29,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document); // 'api' es la ruta donde se servirá la documentación (ej: http://localhost:3000/api)
+  SwaggerModule.setup('api', app, document); //(ej: http://localhost:3000/api)
   // --- Fin de la configuración de Swagger ---
 
   app.setGlobalPrefix('api/v1');
@@ -39,5 +42,6 @@ async function bootstrap() {
   );
 
   await app.listen(3000);
+  console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();
