@@ -13,6 +13,9 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+# .gitignore
+postgres/pg_stat_tmp/
+
 # OS
 .DS_Store
 
