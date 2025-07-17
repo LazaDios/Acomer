@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as Joi from 'joi';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 // Tus módulos existentes
 import { ComandasModule } from './comandas/comandas.module';
@@ -29,23 +29,24 @@ import { AuthModule } from './auth/auth.module';
     DetalleComandasModule,
     EventsModule,
     AuthModule,
-    TypeOrmModule.forRoot({
-      type: "postgres",
-      host: process.env.POSTGRES_HOST,
-      port: parseInt(process.env.DB_PORT || '5432', 10),
-      username: process.env.POSTGRES_USERNAME,
-      password: process.env.POSTGRES_PASSWORD,
-      database: process.env.POSTGRES_DATABASE,
-      autoLoadEntities: true,
-      synchronize: false, // ¡IMPORTANTE! Desactivar en producción
-      ssl: process.env.POSTGRES_SSL === "true",
-      extra: {
-        ssl:
-          process.env.POSTGRES_SSL === "true"
-            ? {
-                rejectUnauthorized: false,
-              }
-            : null,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const isProduction = configService.get<string>('NODE_ENV') === 'production';
+
+        return {
+          type: 'postgres',
+          host: configService.get<string>('DB_HOST'),
+          port: parseInt(configService.get<string>('DB_PORT') || '5432', 10),
+          username: configService.get<string>('DB_USERNAME'),
+          password: configService.get<string>('DB_PASSWORD'),
+          database: configService.get<string>('DB_DATABASE'),
+          entities: [__dirname + '/**/*.entity{.ts,.js}'],
+          synchronize: false, // ¡Siempre false en producción!
+          ssl: isProduction ? { rejectUnauthorized: false } : false, // <-- CAMBIO CLAVE AQUÍ
+          // logging: true, // Útil para depurar conexiones
+        };
       },
     }),
   ],
