@@ -19,7 +19,7 @@ import { AuthModule } from './auth/auth.module';
       // ¡ESTO ES CLAVE! Asegúrate de que `isGlobal: true` esté aquí.
       isGlobal: true,
       validationSchema: Joi.object({
-        JWT_SECRET: Joi.string().required(),
+      JWT_SECRET: Joi.string().required(),
         // ... otras variables de entorno que necesites validar
       }),
       envFilePath: '.env', // Asegúrate de que apunte a tu archivo .env
@@ -30,17 +30,24 @@ import { AuthModule } from './auth/auth.module';
     EventsModule,
     AuthModule,
     TypeOrmModule.forRoot({
-    type: 'mysql',
-    host: 'localhost',
-    port: 3307,
-    username: 'restaurante',
-    password: 'root',
-    database: 'restaurante',
-    autoLoadEntities: true,
-    // Sincronización y DROP SCHEMA para desarrollo:
-    synchronize: true, // Sincroniza el esquema de la DB con las entidades
-  }),
-    
+      type: "postgres",
+      host: process.env.POSTGRES_HOST,
+      port: parseInt(process.env.DB_PORT || '5436', 10),
+      username: process.env.POSTGRES_USERNAME,
+      password: process.env.POSTGRES_PASSWORD,
+      database: process.env.POSTGRES_DATABASE,
+      autoLoadEntities: true,
+      synchronize: true,
+      ssl: process.env.POSTGRES_SSL === "true",
+      extra: {
+        ssl:
+          process.env.POSTGRES_SSL === "true"
+            ? {
+                rejectUnauthorized: false,
+              }
+            : null,
+      },
+    }),
   ],
   controllers: [],
   providers: [],

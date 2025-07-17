@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { DetalleComanda } from "src/detalle-comandas/entities/detalle-comanda.entity";
+import { DetalleComanda } from "../../detalle-comandas/entities/detalle-comanda.entity";
+
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()

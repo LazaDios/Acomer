@@ -16,11 +16,11 @@ import { DetalleComandasService } from './detalle-comandas.service';
 import { /*CreateDetalleComandaDto,*/ CreateMultipleDetallesDto } from './dto/create-detalle-comanda.dto';
 import { UpdateDetalleComandaDto } from './dto/update-detalle-comanda.dto';
 import { DetalleComanda } from './entities/detalle-comanda.entity';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { NombreRol } from 'src/auth/entities/rol.entity';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { Comanda } from 'src/comandas/entities/comanda.entity';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { NombreRol } from '../auth/entities/rol.entity';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Comanda } from '../comandas/entities/comanda.entity';
 
 // --- Importaciones de Swagger ---
 import {
@@ -131,7 +131,7 @@ export class DetalleComandasController {
   // Tu ComandasController ya tiene un método findComandasForCocineroDashboard.
   // Si lo necesitas aquí, deberías inyectar ComandasService y llamarlo desde aquí.
   // Sin embargo, por convención, las listas de comandas (incluso filtradas) van en ComandasController.
-  /*
+
   @Get('cocinero/pendientes')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(NombreRol.COCINERO, NombreRol.ADMINISTRADOR)
@@ -145,7 +145,6 @@ export class DetalleComandasController {
     // Si este método está aquí, necesitarías inyectar ComandasService en este controlador
     // y llamar a comandasService.findComandasForCocineroDashboard();
     return this.detalleComandasService.findComandasForCocineroDashboard(); // Esto asume que el servicio de detalles tiene el método, lo cual es incorrecto.
-  } chatgpt me recomendo esto
-  */
+  }
 
 }

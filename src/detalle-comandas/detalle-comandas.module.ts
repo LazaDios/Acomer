@@ -3,8 +3,8 @@ import { DetalleComandasService } from './detalle-comandas.service';
 import { DetalleComandasController } from './detalle-comandas.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DetalleComanda } from './entities/detalle-comanda.entity';
-import { Comanda } from 'src/comandas/entities/comanda.entity';
-import { Producto } from 'src/productos/entities/producto.entity';
+import { Comanda } from '../comandas/entities/comanda.entity';
+import { Producto } from '../productos/entities/producto.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([DetalleComanda, Comanda, Producto])],

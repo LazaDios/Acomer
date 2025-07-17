@@ -1,15 +1,13 @@
-version: "28.1.1"
+version: "3.8"
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: mysql_db
+  postgresDB:
+    image: postgres:14.1-alpine
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: restaurante
-      MYSQL_USER: restaurante
-      MYSQL_PASSWORD: root
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=db_crud
     volumes:
-      - ./mysql:/var/lib/mysql
+      - ./postgres:/var/lib/postgresql/data
     ports:
-      - "3307:3306"
+      - "5436:5432"

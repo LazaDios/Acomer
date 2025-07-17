@@ -7,7 +7,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
-import { EstadoComanda } from 'src/common/enums/comanda-estado.enum';
+import { EstadoComanda } from '../common/enums/comanda-estado.enum';
 
 @WebSocketGateway({
   cors: {

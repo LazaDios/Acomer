@@ -6,7 +6,7 @@ import { /*CreateDetalleComandaDto,*/ CreateMultipleDetallesDto } from './dto/cr
 import { Comanda } from '../comandas/entities/comanda.entity'; // Importa la entidad Comanda
 import { Producto } from '../productos/entities/producto.entity';
 import { UpdateDetalleComandaDto } from './dto/update-detalle-comanda.dto';
-import { EstadoComanda } from 'src/common/enums/comanda-estado.enum';
+import { EstadoComanda } from '../common/enums/comanda-estado.enum';
 
 @Injectable()
 export class DetalleComandasService {

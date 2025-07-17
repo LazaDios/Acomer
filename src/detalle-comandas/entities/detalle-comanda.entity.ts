@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Comanda } from '../../comandas/entities/comanda.entity'; // Asegúrate de que la ruta sea correcta
-import { Producto } from 'src/productos/entities/producto.entity';
+import { Producto } from '../../productos/entities/producto.entity';
 
 
 
