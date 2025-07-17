@@ -1,8 +1,8 @@
 {
   "name": "acomer_v1",
-  "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "version": "1.0.0",
+  "description": "Api para mi proyecto de Tesis",
+  "author": "Lazaro Marin",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
