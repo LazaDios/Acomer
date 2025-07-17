@@ -37,7 +37,7 @@ import { AuthModule } from './auth/auth.module';
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DATABASE,
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: false, // ¡IMPORTANTE! Desactivar en producción
       ssl: process.env.POSTGRES_SSL === "true",
       extra: {
         ssl:
