@@ -108,11 +108,22 @@ export class DetalleComandasController {
   }
   
 
-  @Get(':id')
-  findOne(@Param('id') id: number) {
-    //return this.detalleComandasService.find(id);
-    return 0;
-  }
+@Get(':id')
+@HttpCode(HttpStatus.OK)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(NombreRol.MESONERO, NombreRol.COCINERO, NombreRol.ADMINISTRADOR) // Permite a todos los operativos ver una comanda
+@ApiBearerAuth('access-token')
+@ApiOperation({ summary: 'Obtiene una comanda por ID con todos sus detalles (útil para edición)' })
+@ApiParam({ name: 'id', type: Number, description: 'ID de la comanda' })
+@ApiResponse({ status: 200, description: 'Comanda encontrada.', type: Comanda })
+@ApiResponse({ status: 404, description: 'Comanda no encontrada.' })
+@ApiResponse({ status: 403, description: 'No autorizado.' })
+async findOneWithDetails(
+    @Param('id', ParseIntPipe) id: number
+): Promise<Comanda> {
+    // LLama al servicio para obtener la comanda con detalles y productos anidados
+    return this.detalleComandasService.findOneWithDetails(id);
+}
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateDetalleComandaDto: UpdateDetalleComandaDto) {
@@ -134,7 +145,7 @@ export class DetalleComandasController {
 
   @Get('cocinero/pendientes')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(NombreRol.COCINERO, NombreRol.ADMINISTRADOR)
+  @Roles(NombreRol.COCINERO, NombreRol.ADMINISTRADOR, NombreRol.MESONERO) // Cocineros, Administradores y Mesoneros pueden acceder
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Obtiene comandas en estado ABIERTA, PREPARANDO o CANCELADA para el dashboard del cocinero' })
   @ApiResponse({ status: 200, description: 'Lista de comandas relevantes para cocina.', type: [Comanda] })
@@ -146,5 +157,19 @@ export class DetalleComandasController {
     // y llamar a comandasService.findComandasForCocineroDashboard();
     return this.detalleComandasService.findComandasForCocineroDashboard(); // Esto asume que el servicio de detalles tiene el método, lo cual es incorrecto.
   }
+
+  // --- AGREGAR ESTE MÉTODO NUEVO ---
+  @Get('mesonero/pendientes')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(NombreRol.MESONERO, NombreRol.ADMINISTRADOR) // Solo Mesoneros y Admin
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Obtiene comandas activas (Abierta, Preparando, Finalizada) para el dashboard del mesonero' })
+  @ApiResponse({ status: 200, description: 'Lista de comandas activas.', type: [Comanda] })
+  async getComandasForMesonero(): Promise<Comanda[]> {
+    this.logger.log(`Usuario (Mesonero) solicitando comandas activas.`);
+    // Llamamos a un nuevo servicio específico para el Mesonero
+    return this.detalleComandasService.findComandasForMesoneroDashboard(); 
+  }
+
 
 }

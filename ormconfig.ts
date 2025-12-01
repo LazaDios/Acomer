@@ -16,7 +16,7 @@ export const AppDataSource = new DataSource({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
 
-  // Rutas desde la raíz del proyecto.
+// Rutas desde la raíz del proyecto.
   // Si tus entidades están en src/entities:
   entities: [join(__dirname, 'src', '**', '*.entity{.ts,.js}')],
 

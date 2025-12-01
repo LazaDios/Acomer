@@ -12,7 +12,7 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } 
 
 @ApiTags('productos') // Etiqueta el controlador para agruparlo en la UI de Swagger
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(NombreRol.ADMINISTRADOR) //SOLO LOS ADMID PUEDEN VER LOS PRODUCTOS
+//@Roles(NombreRol.ADMINISTRADOR) //SOLO LOS ADMID PUEDEN VER LOS PRODUCTOS
 @Controller('productos')
 
 export class ProductosController {
@@ -32,7 +32,7 @@ export class ProductosController {
   }
 
   @Get()
-  @ApiBearerAuth('access-token')
+  //@ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Obtiene todos los productos (solo administradores)' })
   @ApiResponse({ status: 200, description: 'Lista de todos los productos.', type: [Producto] })
   @ApiResponse({ status: 401, description: 'No autenticado.' })

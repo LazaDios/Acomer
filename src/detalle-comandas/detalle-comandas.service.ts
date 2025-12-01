@@ -249,6 +249,32 @@ private async recalculateComandaTotalMUCHAS(comanda_id: number): Promise<void> {
   }
 
 
+async findOneWithDetails(id: number): Promise<Comanda> {
+    const comanda = await this.comandaRepository.findOne({
+        where: { comanda_id: id },
+        relations: [
+            // Carga los detalles de la comanda
+            'detallesComanda', 
+            // Carga la información del producto dentro de cada detalle
+            'detallesComanda.producto' 
+        ],
+        // Opcional: ordenar los detalles por fecha de creación para consistencia
+        order: {
+            detallesComanda: {
+                id_detalle_comanda: 'ASC', 
+            },
+        },
+    });
+
+    if (!comanda) {
+        throw new NotFoundException(`Comanda con ID ${id} no encontrada.`);
+    }
+    
+    // Aquí puedes añadir lógica para calcular el total antes de devolverla
+    // ...
+    
+    return comanda;
+}
 
 
 
@@ -259,8 +285,25 @@ private async recalculateComandaTotalMUCHAS(comanda_id: number): Promise<void> {
 
 
 
-
-
+async findComandasForMesoneroDashboard(): Promise<Comanda[]> {
+    // Asumiendo que inyectaste el repositorio de Comanda como 'comandaRepository'
+    // Si este servicio solo tiene 'detalleComandaRepository', necesitarás inyectar 'ComandaRepository' también.
+    
+    return this.comandaRepository.find({
+      where: {
+        estado_comanda: In([
+            EstadoComanda.ABIERTA, 
+            EstadoComanda.PREPARANDO, 
+            EstadoComanda.FINALIZADA
+        ]),
+        // O simplemente: Not(EstadoComanda.CERRADA) si quieres ver todo menos lo cerrado
+      },
+      relations: ['detallesComanda', 'detallesComanda.producto'], // ¡Importante cargar las relaciones!
+      order: {
+        fecha_hora_comanda: 'DESC', // Las más recientes primero
+      },
+    });
+}
 
 
 
