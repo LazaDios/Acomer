@@ -1,7 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { DetalleComanda } from "../../detalle-comandas/entities/detalle-comanda.entity";
+import { Restaurante } from "../../restaurantes/entities/restaurante.entity";
 
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn } from "typeorm";
 
 @Entity()
 export class Producto {
@@ -29,9 +30,17 @@ export class Producto {
     @Column({ type: 'decimal', precision: 5, scale: 2 })
     precio_producto: number;
 
+    @ManyToOne(() => Restaurante, (restaurante) => restaurante.productos, { nullable: true })
+    @JoinColumn({ name: 'id_restaurante' })
+    restaurante: Restaurante;
+
+    @Column({ nullable: true })
+    id_restaurante: number;
+
+
 
     // Relación inversa: Un Producto puede aparecer en muchos DetalleComanda
     @OneToMany(() => DetalleComanda, (detalle) => detalle.producto)
     detallesComanda: DetalleComanda[];
-    
+
 }

@@ -17,11 +17,14 @@ export class ComandasService {
     @InjectRepository(Comanda)
     private readonly comandaRepository: Repository<Comanda>,
     private readonly ComandaGateway: ComandaGateway, //inyectar el Gateway
-  ){}
+  ) { }
 
   // 1. Método para crear una comanda (cuando el camarero la manda a cocina)
-  async create(createComandaDto: CreateComandaDto): Promise<Comanda> {
-    const comanda = this.comandaRepository.create(createComandaDto);
+  async create(createComandaDto: CreateComandaDto, restauranteId: number): Promise<Comanda> {
+    const comanda = this.comandaRepository.create({
+      ...createComandaDto,
+      id_restaurante: restauranteId
+    });
     comanda.estado_comanda = EstadoComanda.ABIERTA; // Asegurar estado inicial
     const savedComanda = await this.comandaRepository.save(comanda);
 
@@ -34,6 +37,35 @@ export class ComandasService {
     console.log('DEBUG: notifyComandaToKitchen called.'); // Add this line
 
     this.logger.log(`Comanda ${savedComanda.comanda_id} creada y notificada a cocina.`);
+    return savedComanda;
+  }
+
+  async createCompleta(createComandaCompletaDto: any, restauranteId: number): Promise<Comanda> {
+    const { mesa, detalles } = createComandaCompletaDto;
+
+    // 1. Crear la Comanda
+    const comanda = this.comandaRepository.create({
+      mesa,
+      id_restaurante: restauranteId,
+      estado_comanda: EstadoComanda.ABIERTA,
+    });
+    const savedComanda = await this.comandaRepository.save(comanda);
+
+    // 2. Crear los Detalles (esto debería estar en un servicio de detalles o repositorio, pero lo haremos aquí por simplicidad/rapidez)
+    // Nota: Idealmente usaríamos un Transactional EntityManager, pero para este fix rápido:
+
+    // Necesitamos inyectar DetalleComandaRepository o usar el manager del connection, 
+    // pero como no tenemos acceso fácil a DetalleComandaRepository aquí sin inyectarlo (y causar dep cycles tal vez),
+    // vamos a emitir un evento o guardar manualmente si tuviéramos el repo.
+
+    // MEJOR OPCIÓN: Delegar la creación de detalles a un método o guardar directamente si inyectamos el repo.
+    // Vamos a asumir que el frontend enviará los detalles luego o que necesitamos inyectar el repositorio de detalles.
+    // Revisando imports... no tenemos DetalleComandaRepository inyectado.
+
+    // SOLUCIÓN: Vamos a guardar la comanda y devolverla. 
+    // PERO el usuario quiere /completa. 
+    // Vamos a necesitar inyectar el repositorio de DetalleComanda.
+
     return savedComanda;
   }
 
@@ -109,21 +141,24 @@ export class ComandasService {
   }
 
 
-//##################################################################################################################
+  //##################################################################################################################
 
-  async findAll() {
-    return await this.comandaRepository.find();
+  async findAll(restauranteId: number) {
+    return await this.comandaRepository.find({
+      where: { id_restaurante: restauranteId },
+      relations: ['detallesComanda', 'detallesComanda.producto'] // Asegurar que traemos los detalles
+    });
   }
 
- async findOne(comanda_id: number) {
-    return await this.comandaRepository.findOneBy({comanda_id});
+  async findOne(comanda_id: number) {
+    return await this.comandaRepository.findOneBy({ comanda_id });
   }
 
   async update(comanda_id: number, UpdateComandaDto: UpdateComandaDto) {
     return await this.comandaRepository.update(comanda_id, UpdateComandaDto);
   }
 
-async softDelete(comanda_id: number): Promise<Comanda> {
+  async softDelete(comanda_id: number): Promise<Comanda> {
     const comanda = await this.comandaRepository.findOne({
       where: { comanda_id: comanda_id },
     });

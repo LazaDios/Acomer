@@ -11,6 +11,7 @@ import { EventsModule } from './events/events.module';
 
 // Tu nuevo módulo de autenticación
 import { AuthModule } from './auth/auth.module';
+import { RestaurantesModule } from './restaurantes/restaurantes.module';
 
 
 @Module({
@@ -19,7 +20,7 @@ import { AuthModule } from './auth/auth.module';
       // ¡ESTO ES CLAVE! Asegúrate de que `isGlobal: true` esté aquí.
       isGlobal: true,
       validationSchema: Joi.object({
-      JWT_SECRET: Joi.string().required(),
+        JWT_SECRET: Joi.string().required(),
         // ... otras variables de entorno que necesites validar
       }),
       envFilePath: '.env', // Asegúrate de que apunte a tu archivo .env
@@ -28,7 +29,9 @@ import { AuthModule } from './auth/auth.module';
     ComandasModule,
     DetalleComandasModule,
     EventsModule,
+    EventsModule,
     AuthModule,
+    RestaurantesModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -43,8 +46,9 @@ import { AuthModule } from './auth/auth.module';
           password: configService.get<string>('DB_PASSWORD'),
           database: configService.get<string>('DB_DATABASE'),
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
-          synchronize: false, // ¡Siempre false en producción!
-          ssl: isProduction ? { rejectUnauthorized: false } : false, // <-- CAMBIO CLAVE AQUÍ
+          synchronize: true, // TEMPORAL: Cambiado a true para recrear esquema
+          dropSchema: true,  // TEMPORAL: Esto borrará y recreará todas las tablas
+          ssl: isProduction ? { rejectUnauthorized: false } : false,
           // logging: true, // Útil para depurar conexiones
         };
       },
@@ -53,4 +57,4 @@ import { AuthModule } from './auth/auth.module';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }

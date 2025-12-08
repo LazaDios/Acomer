@@ -15,6 +15,7 @@ import { AuthController } from './auth.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Usuario } from './entities/usuario.entity';
 import { Rol } from './entities/rol.entity';
+import { RestaurantesModule } from '../restaurantes/restaurantes.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { Rol } from './entities/rol.entity';
         global: true,
       }),
     }),
+    RestaurantesModule,
   ],
   providers: [
     AuthService,
@@ -41,4 +43,4 @@ import { Rol } from './entities/rol.entity';
   controllers: [AuthController],
   exports: [AuthService, PassportModule, JwtModule], // Exporta lo que necesiten otros módulos
 })
-export class AuthModule {}
+export class AuthModule { }

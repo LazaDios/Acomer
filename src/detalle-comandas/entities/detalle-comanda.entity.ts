@@ -17,7 +17,7 @@ export class DetalleComanda {
   @JoinColumn({ name: 'producto_id' }) // Especifica la columna de la clave foránea
   producto: Producto; // Propiedad para acceder al objeto Producto/Plato relacionado
 
-  @Column({ type: 'int' })  
+  @Column({ type: 'int' })
   cantidad: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 }) // Ajusta precision y scale según tus necesidades
@@ -30,5 +30,6 @@ export class DetalleComanda {
   @Column({ type: 'varchar', length: 255, nullable: true }) // Permite que sea opcional
   descripcion: string;
 
-
+  @Column({ nullable: true })
+  id_restaurante: number;
 }

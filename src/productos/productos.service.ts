@@ -11,19 +11,24 @@ export class ProductosService {
   constructor(
     @InjectRepository(Producto)
     private productoRepository: Repository<Producto>,
-  ) {}
+  ) { }
 
-  async create(createProductoDto: CreateProductoDto) {
-    const producto = this.productoRepository.create(createProductoDto);
+  async create(createProductoDto: CreateProductoDto, restauranteId: number) {
+    const producto = this.productoRepository.create({
+      ...createProductoDto,
+      id_restaurante: restauranteId
+    });
     return await this.productoRepository.save(producto);
   }
 
-  async findAll() {
-    return await this.productoRepository.find();
+  async findAll(restauranteId: number) {
+    return await this.productoRepository.find({
+      where: { id_restaurante: restauranteId }
+    });
   }
 
   async findOne(id_producto: number) {
-    return await this.productoRepository.findOneBy({ id_producto});
+    return await this.productoRepository.findOneBy({ id_producto });
   }
 
   async update(id: number, updateProductoDto: UpdateProductoDto) {

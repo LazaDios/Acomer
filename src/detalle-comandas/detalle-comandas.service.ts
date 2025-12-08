@@ -18,20 +18,20 @@ export class DetalleComandasService {
     private readonly comandaRepository: Repository<Comanda>,
     @InjectRepository(Producto) // Inyecta el repositorio de Producto
     private readonly productoRepository: Repository<Producto>,
-  ) {}
+  ) { }
 
 
-async create(CreateMultipleDetallesDto: CreateMultipleDetallesDto): Promise<DetalleComanda[]>{
+  async create(CreateMultipleDetallesDto: CreateMultipleDetallesDto): Promise<DetalleComanda[]> {
 
-  const { comandaId , detalles} = CreateMultipleDetallesDto;
+    const { comandaId, detalles } = CreateMultipleDetallesDto;
 
-  //1. verificar si la comanda existe
-  const comanda = await this.comandaRepository.findOne({ where: { comanda_id: comandaId } });
+    //1. verificar si la comanda existe
+    const comanda = await this.comandaRepository.findOne({ where: { comanda_id: comandaId } });
     if (!comanda) {
       throw new NotFoundException(`Comanda con ID ${comandaId} no encontrada.`);
     }
 
-    const productosIds = detalles.map( d => d.producto_id );
+    const productosIds = detalles.map(d => d.producto_id);
     // 2. Obtener todos los productos necesarios de una sola vez para optimizar
     const productos = await this.productoRepository.findBy({ id_producto: In(productosIds) }); // Usar `In` de TypeORM
 
@@ -45,7 +45,7 @@ async create(CreateMultipleDetallesDto: CreateMultipleDetallesDto): Promise<Deta
     const productosMap = new Map(productos.map(p => [p.id_producto, p]));
     const detallesParaGuardar: DetalleComanda[] = [];
 
-      // 3. Procesar cada detalle de la lista
+    // 3. Procesar cada detalle de la lista
     for (const item of detalles) {
       const producto = productosMap.get(item.producto_id);
 
@@ -62,7 +62,8 @@ async create(CreateMultipleDetallesDto: CreateMultipleDetallesDto): Promise<Deta
         cantidad: item.cantidad,
         precioUnitario,
         subtotal,
-        descripcion: item.descripcion
+        descripcion: item.descripcion,
+        id_restaurante: comanda.id_restaurante // Heredamos el restaurante de la comanda
       });
       detallesParaGuardar.push(nuevoDetalle);
     }
@@ -74,28 +75,28 @@ async create(CreateMultipleDetallesDto: CreateMultipleDetallesDto): Promise<Deta
     await this.recalculateComandaTotalMUCHAS(comanda.comanda_id);
 
     return detallesGuardados;
-}
-
-// src/detalle-comandas/detalle-comanda.service.ts
-// ...
-private async recalculateComandaTotalMUCHAS(comanda_id: number): Promise<void> {
-  const comanda = await this.comandaRepository
-    .createQueryBuilder('comanda')
-    .leftJoinAndSelect('comanda.detallesComanda', 'detallesComanda')
-    .where('comanda.comanda_id = :comanda_id', { comanda_id })
-    .getOne();
-
-  if (comanda) {
-    // Asegúrate de que detalle.subtotal sea un número
-    const totalCalculado = comanda.detallesComanda.reduce((sum, detalle) => {
-      // Usa parseFloat para garantizar que se trate como número decimal
-      return sum + parseFloat(detalle.subtotal.toString());
-    }, 0); // Asegúrate de que el valor inicial sea 0 (un número)
-
-    comanda.total_comanda = totalCalculado; // Asigna el número directamente
-    await this.comandaRepository.save(comanda);
   }
-}
+
+  // src/detalle-comandas/detalle-comanda.service.ts
+  // ...
+  private async recalculateComandaTotalMUCHAS(comanda_id: number): Promise<void> {
+    const comanda = await this.comandaRepository
+      .createQueryBuilder('comanda')
+      .leftJoinAndSelect('comanda.detallesComanda', 'detallesComanda')
+      .where('comanda.comanda_id = :comanda_id', { comanda_id })
+      .getOne();
+
+    if (comanda) {
+      // Asegúrate de que detalle.subtotal sea un número
+      const totalCalculado = comanda.detallesComanda.reduce((sum, detalle) => {
+        // Usa parseFloat para garantizar que se trate como número decimal
+        return sum + parseFloat(detalle.subtotal.toString());
+      }, 0); // Asegúrate de que el valor inicial sea 0 (un número)
+
+      comanda.total_comanda = totalCalculado; // Asigna el número directamente
+      await this.comandaRepository.save(comanda);
+    }
+  }
 
 
 
@@ -117,8 +118,11 @@ private async recalculateComandaTotalMUCHAS(comanda_id: number): Promise<void> {
 
   // --- Otros métodos comunes (ej. encontrar todos, encontrar por ID, actualizar, eliminar) ---
 
-  async findAll(): Promise<DetalleComanda[]> {
-    return this.detalleComandaRepository.find({ relations: ['comanda', 'producto'] }); // Incluye las relaciones al buscar
+  async findAll(restauranteId: number): Promise<DetalleComanda[]> {
+    return this.detalleComandaRepository.find({
+      where: { id_restaurante: restauranteId },
+      relations: ['comanda', 'producto']
+    });
   }
 
   /*async findOne(id: number): Promise<DetalleComanda> {
@@ -140,7 +144,7 @@ private async recalculateComandaTotalMUCHAS(comanda_id: number): Promise<void> {
     return `This action removes a #${id} detalleComanda`;
   }
 
- async updateSingleDetalleComanda(
+  async updateSingleDetalleComanda(
     comandaId: number,
     detalleId: number,
     updateDto: UpdateDetalleComandaDto,
@@ -188,19 +192,19 @@ private async recalculateComandaTotalMUCHAS(comanda_id: number): Promise<void> {
         where: { id_producto: detalle.producto.id_producto },
       });
       if (productoMaestro && productoMaestro.precio_producto !== detalle.precioUnitario) {
-          precioUnitarioActualizado = productoMaestro.precio_producto!;
+        precioUnitarioActualizado = productoMaestro.precio_producto!;
       }
     }
 
 
     // Actualizar cantidad (si se proporciona)
     if (updateDto.cantidad !== undefined) {
-        detalle.cantidad = updateDto.cantidad;
+      detalle.cantidad = updateDto.cantidad;
     }
 
     // Actualizar descripción (si se proporciona)
     if (updateDto.descripcion !== undefined) {
-        detalle.descripcion = updateDto.descripcion;
+      detalle.descripcion = updateDto.descripcion;
     }
 
     // Recalcular subtotal con los nuevos valores
@@ -227,10 +231,10 @@ private async recalculateComandaTotalMUCHAS(comanda_id: number): Promise<void> {
     return detalleActualizado;
   }
 
-    // --- MÉTODO PARA EL DASHBOARD DEL COCINERO ---
-  async findComandasForCocineroDashboard(): Promise<Comanda[]> {
+  // --- MÉTODO PARA EL DASHBOARD DEL COCINERO ---
+  async findComandasForCocineroDashboard(restauranteId: number): Promise<Comanda[]> {
     // Definir los estados que le interesan al cocinero
-     const estadosCocinero: EstadoComanda[] = [
+    const estadosCocinero: EstadoComanda[] = [
       EstadoComanda.ABIERTA,
       EstadoComanda.PREPARANDO,
       EstadoComanda.CANCELADA, // Si el cocinero necesita ver las canceladas
@@ -238,43 +242,44 @@ private async recalculateComandaTotalMUCHAS(comanda_id: number): Promise<void> {
 
     return this.comandaRepository.find({
       where: {
+        id_restaurante: restauranteId, // <--- FILTRO AGREGADO
         estado_comanda: In(estadosCocinero),// Filtra las comandas por estos estados
       },
-      relations:['detallesComanda', 'detallesComanda.producto'], // <-- ¡Asegúrate de que el nombre de la relación sea 'detalles' si así la tienes en Comanda.entity.ts!
-      order:{
+      relations: ['detallesComanda', 'detallesComanda.producto'], // <-- ¡Asegúrate de que el nombre de la relación sea 'detalles' si así la tienes en Comanda.entity.ts!
+      order: {
         comanda_id: 'ASC', // O 'fecha_creacion: 'ASC'' para ordenarlas por la más antigua primero
       }
     });
-    
+
   }
 
 
-async findOneWithDetails(id: number): Promise<Comanda> {
+  async findOneWithDetails(id: number): Promise<Comanda> {
     const comanda = await this.comandaRepository.findOne({
-        where: { comanda_id: id },
-        relations: [
-            // Carga los detalles de la comanda
-            'detallesComanda', 
-            // Carga la información del producto dentro de cada detalle
-            'detallesComanda.producto' 
-        ],
-        // Opcional: ordenar los detalles por fecha de creación para consistencia
-        order: {
-            detallesComanda: {
-                id_detalle_comanda: 'ASC', 
-            },
+      where: { comanda_id: id },
+      relations: [
+        // Carga los detalles de la comanda
+        'detallesComanda',
+        // Carga la información del producto dentro de cada detalle
+        'detallesComanda.producto'
+      ],
+      // Opcional: ordenar los detalles por fecha de creación para consistencia
+      order: {
+        detallesComanda: {
+          id_detalle_comanda: 'ASC',
         },
+      },
     });
 
     if (!comanda) {
-        throw new NotFoundException(`Comanda con ID ${id} no encontrada.`);
+      throw new NotFoundException(`Comanda con ID ${id} no encontrada.`);
     }
-    
+
     // Aquí puedes añadir lógica para calcular el total antes de devolverla
     // ...
-    
+
     return comanda;
-}
+  }
 
 
 
@@ -285,16 +290,17 @@ async findOneWithDetails(id: number): Promise<Comanda> {
 
 
 
-async findComandasForMesoneroDashboard(): Promise<Comanda[]> {
+  async findComandasForMesoneroDashboard(restauranteId: number): Promise<Comanda[]> {
     // Asumiendo que inyectaste el repositorio de Comanda como 'comandaRepository'
     // Si este servicio solo tiene 'detalleComandaRepository', necesitarás inyectar 'ComandaRepository' también.
-    
+
     return this.comandaRepository.find({
       where: {
+        id_restaurante: restauranteId, // <--- FILTRO AGREGADO
         estado_comanda: In([
-            EstadoComanda.ABIERTA, 
-            EstadoComanda.PREPARANDO, 
-            EstadoComanda.FINALIZADA
+          EstadoComanda.ABIERTA,
+          EstadoComanda.PREPARANDO,
+          EstadoComanda.FINALIZADA
         ]),
         // O simplemente: Not(EstadoComanda.CERRADA) si quieres ver todo menos lo cerrado
       },
@@ -303,89 +309,89 @@ async findComandasForMesoneroDashboard(): Promise<Comanda[]> {
         fecha_hora_comanda: 'DESC', // Las más recientes primero
       },
     });
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
 
 
 
 
+/*async create(createDetalleComandaDto: CreateDetalleComandaDto): Promise<DetalleComanda> {
+   const { comanda_id, producto_id, cantidad } = createDetalleComandaDto;
+
+   // 1. Verificar si la Comanda existe
+   const comanda = await this.comandaRepository.findOne({ where: { comanda_id: comanda_id } });
+   if (!comanda) {
+     throw new NotFoundException(`Comanda con ID ${comanda_id} no encontrada.`);
+   }
+
+   // 2. Verificar si el Producto existe
+   const producto = await this.productoRepository.findOne({ where: {id_producto: producto_id } });
+   if (!producto) {
+     throw new NotFoundException(`Producto con ID ${producto_id} no encontrado.`);
+   }
+
+   // 3. Validar la cantidad
+   if (cantidad <= 0) {
+     throw new BadRequestException('La cantidad debe ser un número positivo.');
+   }
+
+   // 4. Calcular el precio unitario (del producto al momento de añadirlo)
+   // Es crucial tomar el precio del producto *actual* en este momento.
+   // Asegúrate de que tu entidad Producto tenga una propiedad 'precio' o similar.
+   const precioUnitario = producto.precio_producto; // Asumiendo que tu entidad Producto tiene una propiedad 'precio'
+
+   // 5. Calcular el subtotal para esta línea de detalle
+   const subtotal = cantidad * precioUnitario;
+
+   // 6. Crear una nueva instancia de DetalleComanda
+   const nuevoDetalle = this.detalleComandaRepository.create({
+     comanda, // Asignamos el objeto Comanda
+     producto, // Asignamos el objeto Producto
+     cantidad,
+     precioUnitario,
+     subtotal,
+     // No necesitamos asignar comandaId y productoId directamente si asignamos los objetos
+     // TypeORM los manejará automáticamente gracias a las relaciones ManyToOne.
+   });
+
+   const detalleGuardado = await this.detalleComandaRepository.save(nuevoDetalle);
+
+   await this.recalculateComantaTotal(comanda_id);
+
+   return detalleGuardado;
 
 
+   // . Guardar el nuevo detalle en la base de datos
+   return this.detalleComandaRepository.save(nuevoDetalle);
+ }
 
+ private async recalculateComantaTotal(comanda_id:number): Promise<void>{
+   const comanda = await this.comandaRepository
+     .createQueryBuilder('comanda')
+     .leftJoinAndSelect('comanda.detallesComanda' , 'detallesComanda') // ¡IMPORTANTE: Carga los detalles!
+     .where('comanda.comanda_id = :comanda_id', {comanda_id})
+     .getOne();
 
-
-
-
-
-
-}
-
-
-
-
-
- /*async create(createDetalleComandaDto: CreateDetalleComandaDto): Promise<DetalleComanda> {
-    const { comanda_id, producto_id, cantidad } = createDetalleComandaDto;
-
-    // 1. Verificar si la Comanda existe
-    const comanda = await this.comandaRepository.findOne({ where: { comanda_id: comanda_id } });
-    if (!comanda) {
-      throw new NotFoundException(`Comanda con ID ${comanda_id} no encontrada.`);
-    }
-
-    // 2. Verificar si el Producto existe
-    const producto = await this.productoRepository.findOne({ where: {id_producto: producto_id } });
-    if (!producto) {
-      throw new NotFoundException(`Producto con ID ${producto_id} no encontrado.`);
-    }
-
-    // 3. Validar la cantidad
-    if (cantidad <= 0) {
-      throw new BadRequestException('La cantidad debe ser un número positivo.');
-    }
-
-    // 4. Calcular el precio unitario (del producto al momento de añadirlo)
-    // Es crucial tomar el precio del producto *actual* en este momento.
-    // Asegúrate de que tu entidad Producto tenga una propiedad 'precio' o similar.
-    const precioUnitario = producto.precio_producto; // Asumiendo que tu entidad Producto tiene una propiedad 'precio'
-
-    // 5. Calcular el subtotal para esta línea de detalle
-    const subtotal = cantidad * precioUnitario;
-
-    // 6. Crear una nueva instancia de DetalleComanda
-    const nuevoDetalle = this.detalleComandaRepository.create({
-      comanda, // Asignamos el objeto Comanda
-      producto, // Asignamos el objeto Producto
-      cantidad,
-      precioUnitario,
-      subtotal,
-      // No necesitamos asignar comandaId y productoId directamente si asignamos los objetos
-      // TypeORM los manejará automáticamente gracias a las relaciones ManyToOne.
-    });
-
-    const detalleGuardado = await this.detalleComandaRepository.save(nuevoDetalle);
-
-    await this.recalculateComantaTotal(comanda_id);
-
-    return detalleGuardado;
-
-
-    // . Guardar el nuevo detalle en la base de datos
-    return this.detalleComandaRepository.save(nuevoDetalle);
-  }
-
-  private async recalculateComantaTotal(comanda_id:number): Promise<void>{
-    const comanda = await this.comandaRepository
-      .createQueryBuilder('comanda')
-      .leftJoinAndSelect('comanda.detallesComanda' , 'detallesComanda') // ¡IMPORTANTE: Carga los detalles!
-      .where('comanda.comanda_id = :comanda_id', {comanda_id})
-      .getOne();
-
-      if (comanda){
-        const totalCalculado = comanda.detallesComanda.reduce((sum, detallesComanda) => sum + detallesComanda.subtotal, 0);
-        comanda.total_comanda = totalCalculado;
-        await this.comandaRepository.save(comanda);
-      }
-  }
+     if (comanda){
+       const totalCalculado = comanda.detallesComanda.reduce((sum, detallesComanda) => sum + detallesComanda.subtotal, 0);
+       comanda.total_comanda = totalCalculado;
+       await this.comandaRepository.save(comanda);
+     }
+ }
 
 */

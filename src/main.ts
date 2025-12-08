@@ -1,11 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';  
+import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Establecer el prefijo global ANTES de Swagger
+  app.setGlobalPrefix('api/v1');
+
   // --- Configuración de Swagger ---
   const config = new DocumentBuilder()
     .setTitle('ACOMER_V1 API')
@@ -29,10 +33,9 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document); //(ej: http://localhost:3000/api)
+  SwaggerModule.setup('api', app, document); //(ej: http://localhost:3000/api/v1)
   // --- Fin de la configuración de Swagger ---
 
-  app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

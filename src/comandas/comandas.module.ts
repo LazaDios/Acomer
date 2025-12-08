@@ -3,16 +3,17 @@ import { ComandasService } from './comandas.service';
 import { ComandasController } from './comandas.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Comanda } from './entities/comanda.entity';
+import { DetalleComanda } from 'src/detalle-comandas/entities/detalle-comanda.entity';
 import { EventsModule } from 'src/events/events.module';
 
 
 @Module({
-  imports:[
+  imports: [
     TypeOrmModule.forFeature([Comanda]),
     EventsModule,
-],
+  ],
   controllers: [ComandasController],
   providers: [ComandasService],
   exports: [ComandasService],
 })
-export class ComandasModule {}
+export class ComandasModule { }

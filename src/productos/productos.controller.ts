@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpCode, HttpStatus, Request, ForbiddenException } from '@nestjs/common';
 import { ProductosService } from './productos.service';
 import { CreateProductoDto } from './dto/create-producto.dto';
 import { UpdateProductoDto } from './dto/update-producto.dto';
@@ -16,29 +16,37 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } 
 @Controller('productos')
 
 export class ProductosController {
-  constructor(private readonly productosService: ProductosService) {}
+  constructor(private readonly productosService: ProductosService) { }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ApiBearerAuth('access-token') // Indica que este endpoint requiere un token Bearer
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Crea un nuevo producto (solo administradores)' })
   @ApiResponse({ status: 201, description: 'Producto creado exitosamente.', type: Producto })
   @ApiResponse({ status: 400, description: 'Datos de producto inválidos.' })
   @ApiResponse({ status: 401, description: 'No autenticado.' })
   @ApiResponse({ status: 403, description: 'No autorizado (solo administradores pueden crear productos).' })
   @ApiBody({ type: CreateProductoDto, description: 'Datos para crear un nuevo producto.' })
-  create(@Body() createProductoDto: CreateProductoDto) {
-    return this.productosService.create(createProductoDto);
+  create(@Body() createProductoDto: CreateProductoDto, @Request() req) {
+    const restauranteId = req.user.id_restaurante;
+    if (!restauranteId) {
+      // Opcional: lanzar excepción si no tiene restaurante (ej: es un superadmin global sin restaurante asignado)
+      // O permitirlo si la lógica de negocio lo requiere. 
+      // Dado el requerimiento del usuario, lo haremos obligatorio para este endpoint.
+      throw new ForbiddenException('No tienes un restaurante asignado para realizar esta acción.');
+    }
+    return this.productosService.create(createProductoDto, restauranteId);
   }
 
   @Get()
-  //@ApiBearerAuth('access-token')
-  @ApiOperation({ summary: 'Obtiene todos los productos (solo administradores)' })
+  @ApiBearerAuth('access-token') // Descomentado para exigir token
+  @ApiOperation({ summary: 'Obtiene todos los productos del restaurante del usuario' })
   @ApiResponse({ status: 200, description: 'Lista de todos los productos.', type: [Producto] })
   @ApiResponse({ status: 401, description: 'No autenticado.' })
-  @ApiResponse({ status: 403, description: 'No autorizado (solo administradores pueden ver productos).' })
-  findAll() {
-    return this.productosService.findAll();
+  @ApiResponse({ status: 403, description: 'No autorizado.' })
+  findAll(@Request() req) {
+    const restauranteId = req.user.id_restaurante;
+    return this.productosService.findAll(restauranteId);
   }
 
   @Get(':id')
