@@ -140,8 +140,22 @@ export class DetalleComandasService {
     return `This action updates a #${id} detalleComanda`;
   }*/
 
-  remove(id: number) {
-    return `This action removes a #${id} detalleComanda`;
+  async remove(id: number): Promise<void> {
+    const detalle = await this.detalleComandaRepository.findOne({
+      where: { id_detalle_comanda: id },
+      relations: ['comanda']
+    });
+
+    if (!detalle) {
+      throw new NotFoundException(`Detalle de comanda con ID ${id} no encontrado.`);
+    }
+
+    const comandaId = detalle.comanda.comanda_id;
+
+    await this.detalleComandaRepository.remove(detalle);
+
+    // Recalcular el total de la comanda
+    await this.recalculateComandaTotalMUCHAS(comandaId);
   }
 
   async updateSingleDetalleComanda(

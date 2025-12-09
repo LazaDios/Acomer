@@ -151,7 +151,10 @@ export class ComandasService {
   }
 
   async findOne(comanda_id: number) {
-    return await this.comandaRepository.findOneBy({ comanda_id });
+    return await this.comandaRepository.findOne({
+      where: { comanda_id },
+      relations: ['detallesComanda', 'detallesComanda.producto']
+    });
   }
 
   async update(comanda_id: number, UpdateComandaDto: UpdateComandaDto) {
