@@ -17,6 +17,9 @@ export class Restaurante {
   @Column({ nullable: true })
   telefono: string;
 
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  tasa_cambio: number;
+
   @OneToMany(() => Usuario, (usuario) => usuario.restaurante)
   usuarios: Usuario[];
 

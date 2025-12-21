@@ -56,6 +56,8 @@ export class ComandasController {
   @ApiResponse({ status: 403, description: 'No autorizado (rol incorrecto).' })
   create(@Body() createComandaDto: CreateComandaDto, @Request() req) {
     const restauranteId = req.user.id_restaurante;
+    // Asignamos el nombre del mesonero automáticamente desde el token (req.user)
+    createComandaDto.nombre_mesonero = req.user.nombre_completo !== 'N/A' ? req.user.nombre_completo : req.user.username;
     return this.comandasService.create(createComandaDto, restauranteId);
   }
 

@@ -9,4 +9,7 @@ export class CreateRestauranteDto {
 
     @ApiProperty({ example: '+58 412 1234567', description: 'Teléfono de contacto', required: false })
     telefono?: string;
+
+    @ApiProperty({ example: 35.5, description: 'Tasa de cambio USD a BS', required: false })
+    tasa_cambio?: number;
 }
