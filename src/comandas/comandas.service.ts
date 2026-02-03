@@ -9,6 +9,8 @@ import { ComandaGateway } from 'src/events/comanda.gateway';
 
 
 
+import { ProductosService } from 'src/productos/productos.service';
+
 @Injectable()
 export class ComandasService {
   private readonly logger = new Logger(ComandasService.name); //colocado nuevo para gateway
@@ -17,14 +19,27 @@ export class ComandasService {
     @InjectRepository(Comanda)
     private readonly comandaRepository: Repository<Comanda>,
     private readonly ComandaGateway: ComandaGateway, //inyectar el Gateway
+    private readonly productosService: ProductosService, // Inyectar ProductosService
   ) { }
 
   // 1. Método para crear una comanda (cuando el camarero la manda a cocina)
   async create(createComandaDto: CreateComandaDto, restauranteId: number): Promise<Comanda> {
+
+    // --- VALIDACIÓN: Verificar si el restaurante tiene productos ---
+    const productos = await this.productosService.findAll(restauranteId);
+    if (!productos || productos.length === 0) {
+      throw new BadRequestException('No se puede crear una comanda porque el menú está vacío. Pida al administrador que registre productos.');
+    }
+
     const comanda = this.comandaRepository.create({
       ...createComandaDto,
       id_restaurante: restauranteId
     });
+
+    // FORZAR HORA VENEZUELA (America/Caracas) de manera robusta
+    const fechaVenezuelaString = new Date().toLocaleString("en-US", { timeZone: "America/Caracas" });
+    comanda.fecha_hora_comanda = new Date(fechaVenezuelaString);
+
     comanda.estado_comanda = EstadoComanda.ABIERTA; // Asegurar estado inicial
     const savedComanda = await this.comandaRepository.save(comanda);
 
@@ -71,7 +86,7 @@ export class ComandasService {
 
   // 2. Método para actualizar el estado de una comanda
   // Este método será llamado por los controladores de Cocina y Camarero
-  async updateComandaStatus(comanda_id: number, newStatus: EstadoComanda): Promise<Comanda> {
+  async updateComandaStatus(comanda_id: number, newStatus: EstadoComanda, referenciaPago?: string): Promise<Comanda> {
     const comanda = await this.comandaRepository.findOne({ where: { comanda_id } });
 
     if (!comanda) {
@@ -95,6 +110,11 @@ export class ComandasService {
       throw new BadRequestException(`No se puede cancelar una comanda ya Cerrada.`);
     }
     // ... (otras reglas de negocio para transiciones)
+
+    // Si viene referencia de pago, la asignamos
+    if (referenciaPago) {
+      comanda.referencia_pago = referenciaPago;
+    }
 
     comanda.estado_comanda = newStatus;
     const updatedComanda = await this.comandaRepository.save(comanda);

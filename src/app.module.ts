@@ -46,8 +46,8 @@ import { RestaurantesModule } from './restaurantes/restaurantes.module';
           password: configService.get<string>('DB_PASSWORD'),
           database: configService.get<string>('DB_DATABASE'),
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
-          synchronize: true, // TEMPORAL: Cambiado a true para recrear esquema
-          dropSchema: true,  // TEMPORAL: Esto borrará y recreará todas las tablas
+          synchronize: false, // TEMPORAL: Cambiado a true para recrear esquema
+          //dropSchema: true,  // TEMPORAL: Esto borrará y recreará todas las tablas
           ssl: isProduction ? { rejectUnauthorized: false } : false,
           // logging: true, // Útil para depurar conexiones
         };

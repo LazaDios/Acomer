@@ -56,8 +56,20 @@ export class ComandasController {
   @ApiResponse({ status: 403, description: 'No autorizado (rol incorrecto).' })
   create(@Body() createComandaDto: CreateComandaDto, @Request() req) {
     const restauranteId = req.user.id_restaurante;
+
+    // DEBUG: Ver qué usuario está creando la comanda
+    this.logger.log(`Creando comanda. Datos del usuario en token: ${JSON.stringify(req.user)}`);
+
     // Asignamos el nombre del mesonero automáticamente desde el token (req.user)
-    createComandaDto.nombre_mesonero = req.user.nombre_completo !== 'N/A' ? req.user.nombre_completo : req.user.username;
+    // Prioridad: nombre_completo > username
+    const nombre = (req.user.nombre_completo && req.user.nombre_completo !== 'N/A')
+      ? req.user.nombre_completo
+      : req.user.username;
+
+    createComandaDto.nombre_mesonero = nombre;
+
+    this.logger.log(`Nombre de mesonero asignado a la comanda: ${createComandaDto.nombre_mesonero}`);
+
     return this.comandasService.create(createComandaDto, restauranteId);
   }
 
@@ -131,6 +143,7 @@ export class ComandasController {
   async updateStatus(
     @Param('id') id: number,
     @Body('estado') newStatus: EstadoComanda,
+    @Body('referencia_pago') referenciaPago: string, // Capturamos la referencia opcional
     @Request() req,
   ) {
     const userRol = req.user.rol.nombre;
@@ -166,7 +179,7 @@ export class ComandasController {
         throw new BadRequestException('Transición de estado no permitida o rol no autorizado.');
     }
 
-    return this.comandasService.updateComandaStatus(id, newStatus);
+    return this.comandasService.updateComandaStatus(id, newStatus, referenciaPago);
   }
 
 

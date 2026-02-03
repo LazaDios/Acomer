@@ -57,6 +57,16 @@ export class Comanda {
   total_comanda = 0;
 
   @ApiProperty({
+    description: 'Referencia de pago (opcional) para transferencias o control interno',
+    example: 'REF-12345',
+    required: false,
+    nullable: true,
+  })
+  @Column({ nullable: true })
+  referencia_pago: string; // Nuevo Campo
+
+
+  @ApiProperty({
     description: 'Fecha y hora de creación de la comanda',
     example: '2025-07-15T10:30:00Z',
     type: String, // Se representa como string en OpenAPI para fechas

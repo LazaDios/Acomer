@@ -12,10 +12,7 @@ export class RegisterRestaurantDto {
     @IsNotEmpty()
     username: string;
 
-    @ApiProperty({ example: '12345678', description: 'Cédula del administrador' })
-    @IsString()
-    @IsNotEmpty()
-    cedula: string;
+
 
     @ApiProperty({ example: 'juan@example.com', description: 'Correo electrónico (Gmail)' })
     @IsEmail()

@@ -14,4 +14,12 @@ export class UpdateComandaDto extends PartialType(CreateComandaDto) {
     @IsOptional()
     @IsEnum(EstadoComanda, { message: 'El estado no es un valor válido.' })
     estado_comanda: EstadoComanda; // El estado es opcional para actualizar, ya que no siempre se cambia
+
+    @ApiProperty({
+        description: 'Referencia de pago opcional al cerrar la comanda',
+        example: 'REF-001',
+        required: false,
+    })
+    @IsOptional()
+    referencia_pago?: string;
 }

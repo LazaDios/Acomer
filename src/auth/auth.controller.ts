@@ -1,6 +1,7 @@
-import { Controller, Post, Body, UseGuards, Request, Get, HttpCode, HttpStatus, Logger } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request, Get, HttpCode, HttpStatus, Logger, Delete, Param, Patch } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
+import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { LoginUsuarioDto } from './dto/login-usuario.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { RegisterRestaurantDto } from './dto/register-restaurant.dto';
@@ -109,5 +110,40 @@ export class AuthController {
   getCocineroDashboard(@Request() req) {
     this.logger.verbose(`Cocinero dashboard accessed by user: ${req.user.username}`);
     return { message: `Bienvenido al panel de Cocinero, ${req.user.username}` };
+  }
+
+  // --- ENDPOINTS DE GESTIÓN DE PERSONAL ---
+
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(NombreRol.ADMINISTRADOR)
+  @Get('users')
+  @ApiOperation({ summary: 'Listar usuarios del restaurante (Admin)' })
+  @ApiResponse({ status: 200, description: 'Lista de usuarios.' })
+  async getUsers(@Request() req) {
+    const restauranteId = req.user.id_restaurante;
+    return this.authService.findAllByRestaurant(restauranteId);
+  }
+
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(NombreRol.ADMINISTRADOR)
+  @Delete('users/:id')
+  @ApiOperation({ summary: 'Eliminar usuario del restaurante (Admin)' })
+  @ApiResponse({ status: 200, description: 'Usuario eliminado.' })
+  async deleteUser(@Request() req, @Param('id') id: string) { // id viene como string params
+    const restauranteId = req.user.id_restaurante;
+    return this.authService.remove(+id, restauranteId);
+  }
+
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(NombreRol.ADMINISTRADOR)
+  @Patch('users/:id')
+  @ApiOperation({ summary: 'Actualizar usuario del restaurante (Admin)' })
+  @ApiResponse({ status: 200, description: 'Usuario actualizado.' })
+  async updateUser(@Request() req, @Param('id') id: string, @Body() updateUsuarioDto: UpdateUsuarioDto) {
+    const restauranteId = req.user.id_restaurante;
+    return this.authService.update(+id, updateUsuarioDto, restauranteId);
   }
 }

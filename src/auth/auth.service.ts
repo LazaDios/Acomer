@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Usuario } from './entities/usuario.entity';
 import { Rol, NombreRol } from './entities/rol.entity';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
+import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { OAuth2Client } from 'google-auth-library';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { RestaurantesService } from '../restaurantes/restaurantes.service';
@@ -126,6 +127,7 @@ export class AuthService implements OnModuleInit {
       id_usuario: usuario.id_usuario,
       rol: usuario.rol.nombre,
       restaurante_id: payloadRestauranteId,
+      nombre_completo: usuario.nombre_completo,
     };
     this.logger.log(`Generando token JWT para el usuario: ${usuario.username} (Restaurante: ${payloadRestauranteId})`);
 
@@ -262,12 +264,12 @@ export class AuthService implements OnModuleInit {
   }
 
   async registerRestaurant(registerRestaurantDto: RegisterRestaurantDto) {
-    const { restaurantName, username, cedula, email, password } = registerRestaurantDto;
+    const { restaurantName, username, email, password } = registerRestaurantDto;
 
     // 1. Verificar si el email o username ya existen
     const existingEmail = await this.usuariosRepository.findOne({ where: { email } });
     if (existingEmail) {
-      throw new BadRequestException('El correo electrónico ya está registrado.');
+      throw new BadRequestException('No se puede crear cuenta ya que ese correo ya se encuentra en uso.');
     }
     const existingUser = await this.usuariosRepository.findOne({ where: { username } });
     if (existingUser) {
@@ -283,7 +285,7 @@ export class AuthService implements OnModuleInit {
     const adminUser = this.usuariosRepository.create({
       email,
       username,
-      cedula,
+      // cedula, // Removed
       nombre_completo: username, // Usamos username como nombre por defecto si no se pide nombre completo
       rol: rolAdmin,
       rol_id: rolAdmin.id_rol,
@@ -317,5 +319,64 @@ export class AuthService implements OnModuleInit {
         role: adminUser.rol.nombre
       }
     };
+  }
+  // --- GESTIÓN DE USUARIOS (ADMIN) ---
+
+  async findAllByRestaurant(restauranteId: number): Promise<Usuario[]> {
+    return this.usuariosRepository.find({
+      where: { id_restaurante: restauranteId },
+      order: { nombre_completo: 'ASC' }
+    });
+  }
+
+  async remove(idToDelete: number, adminRestauranteId: number) {
+    const userToDelete = await this.usuariosRepository.findOne({ where: { id_usuario: idToDelete } });
+
+    if (!userToDelete) {
+      throw new NotFoundException('Usuario no encontrado.');
+    }
+
+    if (userToDelete.id_restaurante !== adminRestauranteId) {
+      throw new ForbiddenException('No tienes permisos para eliminar a este usuario (es de otro restaurante).');
+    }
+
+    // Opcional: Evitar que el admin se borre a sí mismo (se puede manejar en frontend también)
+    // if (userToDelete.rol.nombre === NombreRol.ADMINISTRADOR) ... 
+
+    return this.usuariosRepository.delete(idToDelete);
+  }
+
+  async update(idToUpdate: number, updateUsuarioDto: UpdateUsuarioDto, adminRestauranteId: number) {
+    const user = await this.usuariosRepository.findOne({ where: { id_usuario: idToUpdate } });
+
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado.');
+    }
+
+    if (user.id_restaurante !== adminRestauranteId) {
+      throw new ForbiddenException('No tienes permisos para editar a este usuario.');
+    }
+
+    const { password, rolId, ...rest } = updateUsuarioDto;
+
+    // Actualizar campos básicos
+    Object.assign(user, rest);
+
+    // Actualizar Password si viene
+    if (password) {
+      user.password = password;
+      await user.hashPassword(); // Método de la entidad que hashea
+    }
+
+    // Actualizar Rol si viene
+    if (rolId) {
+      const rol = await this.rolesRepository.findOne({ where: { id_rol: rolId } });
+      if (rol) {
+        user.rol = rol;
+        user.rol_id = rolId;
+      }
+    }
+
+    return this.usuariosRepository.save(user);
   }
 }
