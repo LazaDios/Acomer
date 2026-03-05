@@ -86,17 +86,15 @@ export class ComandasService {
 
   // 2. Método para actualizar el estado de una comanda
   // Este método será llamado por los controladores de Cocina y Camarero
-  async updateComandaStatus(comanda_id: number, newStatus: EstadoComanda, referenciaPago?: string): Promise<Comanda> {
+  async updateComandaStatus(comanda_id: number, newStatus: EstadoComanda, referenciaPago?: string, motivoCancelacion?: string): Promise<Comanda> {
     const comanda = await this.comandaRepository.findOne({ where: { comanda_id } });
 
     if (!comanda) {
       throw new NotFoundException(`Comanda con ID ${comanda_id} no encontrada.`);
     }
 
-    const oldStatus = comanda.estado_comanda; // Para validar transiciones y emitir mensajes correctos
+    const oldStatus = comanda.estado_comanda;
 
-    // --- Lógica de validación de transición de estado (¡Esencial!) ---
-    // Ejemplos:
     if (newStatus === EstadoComanda.PREPARANDO && oldStatus !== EstadoComanda.ABIERTA) {
       throw new BadRequestException(`Solo se puede pasar de Abierta a Preparando.`);
     }
@@ -109,11 +107,14 @@ export class ComandasService {
     if (newStatus === EstadoComanda.CANCELADA && (oldStatus === EstadoComanda.CERRADA)) {
       throw new BadRequestException(`No se puede cancelar una comanda ya Cerrada.`);
     }
-    // ... (otras reglas de negocio para transiciones)
 
-    // Si viene referencia de pago, la asignamos
     if (referenciaPago) {
       comanda.referencia_pago = referenciaPago;
+    }
+
+    // Guardar motivo de cancelación si el estado es CANCELADA
+    if (newStatus === EstadoComanda.CANCELADA && motivoCancelacion) {
+      comanda.motivo_cancelacion = motivoCancelacion;
     }
 
     comanda.estado_comanda = newStatus;

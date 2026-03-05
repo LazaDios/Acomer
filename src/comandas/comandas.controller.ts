@@ -67,8 +67,9 @@ export class ComandasController {
       : req.user.username;
 
     createComandaDto.nombre_mesonero = nombre;
+    (createComandaDto as any).id_usuario = req.user.id_usuario;
 
-    this.logger.log(`Nombre de mesonero asignado a la comanda: ${createComandaDto.nombre_mesonero}`);
+    this.logger.log(`Nombre de mesonero asignado a la comanda: ${createComandaDto.nombre_mesonero} (ID: ${req.user.id_usuario})`);
 
     return this.comandasService.create(createComandaDto, restauranteId);
   }
@@ -143,7 +144,8 @@ export class ComandasController {
   async updateStatus(
     @Param('id') id: number,
     @Body('estado') newStatus: EstadoComanda,
-    @Body('referencia_pago') referenciaPago: string, // Capturamos la referencia opcional
+    @Body('referencia_pago') referenciaPago: string,
+    @Body('motivo') motivo: string, // Motivo de cancelación
     @Request() req,
   ) {
     const userRol = req.user.rol.nombre;
@@ -179,7 +181,7 @@ export class ComandasController {
         throw new BadRequestException('Transición de estado no permitida o rol no autorizado.');
     }
 
-    return this.comandasService.updateComandaStatus(id, newStatus, referenciaPago);
+    return this.comandasService.updateComandaStatus(id, newStatus, referenciaPago, motivo);
   }
 
 

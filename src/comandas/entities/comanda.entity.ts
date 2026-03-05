@@ -31,6 +31,13 @@ export class Comanda {
   @Column()
   nombre_mesonero: string;
 
+  @ApiProperty({
+    description: 'ID del usuario que creó la comanda',
+    example: 1,
+  })
+  @Column({ nullable: true })
+  id_usuario: number;
+
 
   @ApiProperty({
     description: 'Estado actual de la comanda',
@@ -63,7 +70,16 @@ export class Comanda {
     nullable: true,
   })
   @Column({ nullable: true })
-  referencia_pago: string; // Nuevo Campo
+  referencia_pago: string;
+
+  @ApiProperty({
+    description: 'Motivo de cancelación ingresado por el mesonero',
+    example: 'El cliente se fue sin pagar',
+    required: false,
+    nullable: true,
+  })
+  @Column({ nullable: true })
+  motivo_cancelacion: string;
 
 
   @ApiProperty({

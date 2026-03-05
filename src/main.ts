@@ -44,7 +44,9 @@ async function bootstrap() {
     })
   );
 
-  await app.listen(parseInt(process.env.PORT || '3000', 10));
+  app.enableCors(); // Importante para conexiones externas
+
+  await app.listen(parseInt(process.env.PORT || '3000', 10), '0.0.0.0');
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();
