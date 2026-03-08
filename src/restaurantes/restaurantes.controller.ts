@@ -14,8 +14,8 @@ export class RestaurantesController {
     @ApiBearerAuth('access-token')
     @UseGuards(JwtAuthGuard)
     @Post()
-    create(@Body() createRestauranteDto: CreateRestauranteDto, @Request() req) {
-        return this.restaurantesService.create(createRestauranteDto, req.user);
+    create(@Body() createRestauranteDto: CreateRestauranteDto) {
+        return this.restaurantesService.create(createRestauranteDto);
     }
 
     @Get()
