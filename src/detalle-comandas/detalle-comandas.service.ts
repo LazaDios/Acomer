@@ -58,7 +58,7 @@ export class DetalleComandasService {
         precioUnitario,
         subtotal,
         descripcion: item.descripcion,
-        restaurante_id: comanda.restaurante_id
+        id_restaurante: comanda.id_restaurante
       });
       detallesParaGuardar.push(nuevoDetalle);
     }
@@ -91,7 +91,7 @@ export class DetalleComandasService {
 
   async findAll(restauranteId: number): Promise<DetalleComanda[]> {
     return this.detalleComandaRepository.find({
-      where: { restaurante_id: restauranteId },
+      where: { id_restaurante: restauranteId },
       relations: ['comanda', 'producto']
     });
   }
@@ -168,7 +168,7 @@ export class DetalleComandasService {
 
     return await this.comandaRepository.find({
       where: {
-        restaurante_id: restauranteId,
+        id_restaurante: restauranteId,
         fecha_hora_comanda: MoreThanOrEqual(dateLimit)
       },
       relations: ['detallesComanda', 'detallesComanda.producto'],
@@ -193,7 +193,7 @@ export class DetalleComandasService {
 
     return this.comandaRepository.find({
       where: {
-        restaurante_id: restauranteId,
+        id_restaurante: restauranteId,
         estado_comanda: In(estadosCocinero),
         fecha_hora_comanda: MoreThanOrEqual(dateLimit)
       },
@@ -208,7 +208,7 @@ export class DetalleComandasService {
 
     return this.comandaRepository.find({
       where: {
-        restaurante_id: restauranteId,
+        id_restaurante: restauranteId,
         estado_comanda: In([EstadoComanda.ABIERTA, EstadoComanda.PREPARANDO, EstadoComanda.FINALIZADA]),
         fecha_hora_comanda: MoreThanOrEqual(dateLimit)
       },

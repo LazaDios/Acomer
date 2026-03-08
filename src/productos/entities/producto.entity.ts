@@ -31,11 +31,11 @@ export class Producto {
     precio_producto: number;
 
     @ManyToOne(() => Restaurante, (restaurante) => restaurante.productos, { nullable: true })
-    @JoinColumn({ name: 'restaurante_id' })
+    @JoinColumn({ name: 'id_restaurante' })
     restaurante: Restaurante;
 
-    @Column({ name: 'restaurante_id', nullable: true })
-    restaurante_id: number;
+    @Column({ name: 'id_restaurante', nullable: true })
+    id_restaurante: number;
 
 
 

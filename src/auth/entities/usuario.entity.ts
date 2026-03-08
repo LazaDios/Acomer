@@ -73,11 +73,11 @@ export class Usuario {
   rol_id: number;
 
   @ManyToOne(() => Restaurante, (restaurante) => restaurante.usuarios, { nullable: true })
-  @JoinColumn({ name: 'restaurante_id' })
+  @JoinColumn({ name: 'id_restaurante' })
   restaurante: Restaurante;
 
-  @Column({ name: 'restaurante_id', type: 'int', nullable: true })
-  restaurante_id: number;
+  @Column({ name: 'id_restaurante', type: 'int', nullable: true })
+  id_restaurante: number;
 
   async hashPassword() {
     if (this.password) {

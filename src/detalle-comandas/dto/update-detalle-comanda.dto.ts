@@ -3,7 +3,7 @@ import { /*CreateDetalleComandaDto,*/ CreateMultipleDetallesDto } from './create
 import { IsInt, IsOptional, IsPositive, IsString, MaxLength, Min } from 'class-validator';
 
 
-export class UpdateDetalleComandaDto extends PartialType(CreateMultipleDetallesDto){
+export class UpdateDetalleComandaDto extends PartialType(CreateMultipleDetallesDto) {
 
   @IsOptional() // Hacemos opcional para la creación, pero no para la actualización de uno existente
   @IsInt()
@@ -23,6 +23,6 @@ export class UpdateDetalleComandaDto extends PartialType(CreateMultipleDetallesD
   @IsOptional()
   @IsString()
   @MaxLength(255)
-  descripcion: "S/N";
-  
+  descripcion?: string;
+
 }

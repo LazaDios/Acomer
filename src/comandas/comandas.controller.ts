@@ -45,7 +45,7 @@ export class ComandasController {
   @ApiResponse({ status: 401, description: 'No autenticado.' })
   @ApiResponse({ status: 403, description: 'No autorizado (rol incorrecto).' })
   create(@Body() createComandaDto: CreateComandaDto, @Request() req) {
-    const restauranteId = req.user.restaurante_id;
+    const restauranteId = req.user.id_restaurante;
 
     // DEBUG: Ver qué usuario está creando la comanda
     this.logger.log(`Creando comanda. Datos del usuario en token: ${JSON.stringify(req.user)}`);

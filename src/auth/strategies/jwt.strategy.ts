@@ -33,13 +33,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * @returns El objeto de usuario que se adjuntará a `req.user`.
    * Puedes retornar un objeto simple o buscar el usuario completo en la DB si necesitas más datos.
    */
-  async validate(payload: any): Promise<Usuario> {
+  async validate(payload: any) {
     return {
-      id_usuario: payload.id_usuario,
+      id_usuario: payload.sub,
       username: payload.username,
-      rol: { nombre: payload.rol },
-      restaurante_id: payload.restaurante_id,
-      nombre_completo: payload.nombre_completo,
-    } as Usuario;
+      rol: { nombre: payload.rol }, // Asegurar compatibilidad con el RolesGuard
+      id_restaurante: payload.id_restaurante,
+    };
   }
 }

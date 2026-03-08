@@ -23,11 +23,11 @@ export class Rol {
   id_rol: number;
 
   @Column({
-    name: 'Nombre',
+    name: 'nombre',
     unique: true,
-    nullable: false,
+    nullable: true, // Temporalmente true para evitar el error de "contains null values"
   })
-  nombre: string; // Usamos string simple para máxima compatibilidad
+  nombre: string;
 
   /**
    * Relación One-to-Many con la entidad Usuario.

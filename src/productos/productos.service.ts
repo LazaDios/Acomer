@@ -16,14 +16,14 @@ export class ProductosService {
   async create(createProductoDto: CreateProductoDto, restauranteId: number) {
     const producto = this.productoRepository.create({
       ...createProductoDto,
-      restaurante_id: restauranteId
+      id_restaurante: restauranteId
     });
     return await this.productoRepository.save(producto);
   }
 
   async findAll(restauranteId: number) {
     return await this.productoRepository.find({
-      where: { restaurante_id: restauranteId }
+      where: { id_restaurante: restauranteId }
     });
   }
 

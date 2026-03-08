@@ -1,13 +1,7 @@
-//Este es el módulo que agrupará todos los componentes de autenticación.
-//Importará TypeOrmModule.forFeature para tus entidades Usuario y Rol.
-//Importará PassportModule y JwtModule.
-//Declarará AuthService como proveedor y AuthController como controlador.
-//Es crucial que exporte AuthService, JwtModule y PassportModule para que otros módulos (como ComandasModule) puedan usarlos para proteger rutas.
-
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config'; // Asegúrate de importar ambos
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { AuthService } from './auth.service';
@@ -16,20 +10,20 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Usuario } from './entities/usuario.entity';
 import { Rol } from './entities/rol.entity';
 import { RestaurantesModule } from '../restaurantes/restaurantes.module';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Module({
   imports: [
-    // ¡IMPORTANTE! Agrega ConfigModule aquí si no es global o para mayor seguridad.
     ConfigModule,
     PassportModule,
     TypeOrmModule.forFeature([Usuario, Rol]),
     JwtModule.registerAsync({
-      // Si usas registerAsync, **también** necesitas importar ConfigModule aquí dentro.
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: '1d' }, // O el tiempo de expiración que desees
+        signOptions: { expiresIn: '1d' },
         global: true,
       }),
     }),
@@ -38,9 +32,31 @@ import { RestaurantesModule } from '../restaurantes/restaurantes.module';
   providers: [
     AuthService,
     LocalStrategy,
-    JwtStrategy, // Asegúrate de que JwtStrategy esté listado como proveedor
+    JwtStrategy,
   ],
   controllers: [AuthController],
-  exports: [AuthService, PassportModule, JwtModule], // Exporta lo que necesiten otros módulos
+  exports: [AuthService, PassportModule, JwtModule],
 })
-export class AuthModule { }
+export class AuthModule implements OnModuleInit {
+  constructor(
+    @InjectRepository(Rol)
+    private readonly rolesRepository: Repository<Rol>,
+  ) { }
+
+  async onModuleInit() {
+    try {
+      const rolesCount = await this.rolesRepository.count();
+      if (rolesCount === 0) {
+        console.log('🌱 Sembrando roles iniciales...');
+        await this.rolesRepository.save([
+          { nombre: 'administrador' },
+          { nombre: 'mesonero' },
+          { nombre: 'cocinero' },
+        ]);
+        console.log('✅ Roles sembrados con éxito.');
+      }
+    } catch (error) {
+      console.error('❌ Error al sembrar roles:', error.message);
+    }
+  }
+}

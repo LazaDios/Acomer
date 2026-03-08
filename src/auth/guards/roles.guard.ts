@@ -12,7 +12,7 @@ import { ROLES_KEY } from '../decorators/roles.decorator'; // Importa la clave d
  */
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {} // Inyecta Reflector
+  constructor(private reflector: Reflector) { } // Inyecta Reflector
 
   /**
    * Determina si la solicitud es permitida basada en los roles del usuario.
@@ -37,22 +37,24 @@ export class RolesGuard implements CanActivate {
     const { user } = context.switchToHttp().getRequest();
 
     // 3. Validar si el usuario y su rol existen
-    if (!user || !user.rol || !user.rol.nombre) {
-        // Esto puede ocurrir si el token JWT no contenía la información del rol
-        // o si el JwtStrategy no la adjuntó correctamente.
-        throw new UnauthorizedException('Información de rol del usuario no disponible.');
+    if (!user || !user.rol) {
+      throw new UnauthorizedException('Información de rol del usuario no disponible.');
+    }
+
+    // Extraer el nombre del rol (puede venir del objeto o ser un string directo)
+    const userRoleName = (typeof user.rol === 'object' ? user.rol.nombre : user.rol);
+
+    if (!userRoleName) {
+      throw new UnauthorizedException('El nombre del rol es inválido o no está presente.');
     }
 
     // 4. Verificar si el rol del usuario está entre los roles requeridos
-    // 'some' retorna true si al menos uno de los roles requeridos coincide con el rol del usuario.
-    const hasRequiredRole = requiredRoles.some((role) => user.rol.nombre === role);
+    const hasRequiredRole = requiredRoles.some((role) => userRoleName === role);
 
     if (!hasRequiredRole) {
-        // Puedes lanzar una ForbiddenException aquí si quieres un mensaje de error 403 claro
-        // throw new ForbiddenException('No tienes el rol necesario para acceder a esta ruta.');
-        return false; // Niega el acceso si el rol no coincide
+      return false;
     }
 
-    return true; // Permite el acceso
+    return true;
   }
 }

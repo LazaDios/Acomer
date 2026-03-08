@@ -40,7 +40,7 @@ export class AuthService {
       ...userData,
       password: hashedPassword,
       rol_id: rol.id_rol,
-      restaurante_id: requestUser?.restaurante_id // Si viene un admin registrando, se hereda el restaurante
+      id_restaurante: requestUser?.id_restaurante // Usamos el nombre viejo
     });
 
     const savedUser = await this.usuariosRepository.save(user);
@@ -48,17 +48,40 @@ export class AuthService {
     return result;
   }
 
-  async login(user: any, restauranteId?: number) {
-    // Si se pasa un restauranteId, validamos que el usuario pertenezca a ese restaurante
-    if (restauranteId && user.restaurante_id !== restauranteId) {
+  async login(user: any, id_restaurante?: number) {
+    if (id_restaurante && user.id_restaurante !== id_restaurante) {
       throw new UnauthorizedException('No tienes permiso para acceder a este restaurante.');
     }
+
+    // --- DETECCIÓN DE ROL ULTRA-ROBUSTA ---
+    let nombreRol = '';
+
+    if (user.rol?.nombre) {
+      nombreRol = user.rol.nombre;
+    } else if (typeof user.rol === 'string') {
+      nombreRol = user.rol;
+    } else {
+      // Si no viene el rol cargado, lo buscamos manualmente por el ID
+      const rolId = user.rol_id;
+      this.logger.debug(`Buscando nombre de rol para ID: ${rolId}`);
+      const rolEncontrado = await this.rolesRepository.findOneBy({ id_rol: rolId });
+      nombreRol = rolEncontrado?.nombre || '';
+    }
+
+    // Normalizar y fallback
+    nombreRol = nombreRol.toLowerCase().trim();
+    if (!nombreRol) {
+      this.logger.warn(`¡ADVERTENCIA! No se encontró rol para el usuario ${user.username}. Usando 'mesonero' por defecto.`);
+      nombreRol = 'mesonero';
+    }
+
+    this.logger.log(`LOGIN EXITOSO: Usuario=${user.username}, Rol detectado=${nombreRol}`);
 
     const payload = {
       username: user.username,
       sub: user.id_usuario,
-      rol: user.rol?.nombre || user.rol, // Maneja objeto o string
-      restaurante_id: user.restaurante_id
+      rol: nombreRol,
+      id_restaurante: user.id_restaurante
     };
 
     return {
@@ -68,10 +91,10 @@ export class AuthService {
         username: user.username,
         email: user.email,
         nombre_completo: user.nombre_completo,
-        rol: user.rol?.nombre || user.rol,
-        restaurante_id: user.restaurante_id,
+        rol: nombreRol,
+        id_restaurante: user.id_restaurante,
       },
-      restaurant: user.restaurante,
+      restaurant: user.restaurante || null,
     };
   }
 
@@ -101,8 +124,7 @@ export class AuthService {
 
     const rolAdmin = await this.rolesRepository.findOne({ where: { nombre: NombreRol.ADMINISTRADOR } });
     if (!rolAdmin) {
-      this.logger.error('CRÍTICO: No se encontró el rol ADMINISTRADOR en la base de datos.');
-      throw new NotFoundException('Rol ADMINISTRADOR no encontrado en la base de datos.');
+      throw new NotFoundException('Rol ADMINISTRADOR no encontrado.');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -123,37 +145,38 @@ export class AuthService {
         telefono: '',
       });
 
-      adminUser.restaurante_id = nuevoRestaurante.id_restaurante;
+      adminUser.id_restaurante = nuevoRestaurante.id_restaurante;
+      adminUser.restaurante = nuevoRestaurante; // Asignamos el objeto completo para que el login lo devuelva
       await this.usuariosRepository.save(adminUser);
 
-      this.logger.log(`Restaurante "${restaurantName}" registrado con éxito.`);
+      this.logger.log(`Restaurante "${restaurantName}" registrado con éxito (id: ${nuevoRestaurante.id_restaurante}).`);
 
-      return this.login(adminUser); // Usamos el método login común para devolver el token
+      return this.login(adminUser);
 
     } catch (error) {
-      this.logger.error(`Error en registro de restaurante: ${error.message}`);
+      this.logger.error(`Error en registro: ${error.message}`);
       throw error;
     }
   }
 
-  async findAllByRestaurant(restauranteId: number) {
+  async findAllByRestaurant(id_restaurante: number) {
     return this.usuariosRepository.find({
-      where: { restaurante_id: restauranteId },
+      where: { id_restaurante },
       relations: ['rol']
     });
   }
 
-  async remove(id: number, restauranteId: number) {
+  async remove(id: number, id_restaurante: number) {
     const user = await this.usuariosRepository.findOne({
-      where: { id_usuario: id, restaurante_id: restauranteId }
+      where: { id_usuario: id, id_restaurante: id_restaurante }
     });
     if (!user) throw new NotFoundException('Usuario no encontrado');
     return this.usuariosRepository.remove(user);
   }
 
-  async update(id: number, updateUsuarioDto: UpdateUsuarioDto, restauranteId: number) {
+  async update(id: number, updateUsuarioDto: UpdateUsuarioDto, id_restaurante: number) {
     const user = await this.usuariosRepository.findOne({
-      where: { id_usuario: id, restaurante_id: restauranteId }
+      where: { id_usuario: id, id_restaurante: id_restaurante }
     });
     if (!user) throw new NotFoundException('Usuario no encontrado');
 
@@ -166,7 +189,6 @@ export class AuthService {
   }
 
   async googleLogin(googleLoginDto: any) {
-    // Implementación mínima para evitar errores de compilación
-    return { message: 'Google Login debe ser implementado con su lógica específica si se usa.' };
+    return { message: 'Google Login revertido para estabilidad local.' };
   }
 }

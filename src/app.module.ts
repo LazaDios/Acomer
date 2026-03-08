@@ -46,8 +46,8 @@ import { RestaurantesModule } from './restaurantes/restaurantes.module';
           password: configService.get<string>('DB_PASSWORD'),
           database: configService.get<string>('DB_DATABASE'),
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
-          synchronize: false, // APAGADO: Evitamos el error de "type already exists" en Supabase
-          //dropSchema: true,  // TEMPORAL: Esto borrará y recreará todas las tablas
+          synchronize: true,
+          dropSchema: false, // Desactivado definitivamente para persistencia de datos nuevos
           ssl: isProduction ? { rejectUnauthorized: false } : false,
           // logging: true, // Útil para depurar conexiones
         };
