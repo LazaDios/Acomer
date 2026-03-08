@@ -36,11 +36,8 @@ export class ComandasService {
       id_restaurante: restauranteId
     });
 
-    // Forzar hora de Venezuela (UTC+4 desde perspectiva del servidor en Render/UTC)
-    // El frontend resta 4h al mostrar, compensamos sumando 4h al guardar.
-    const now = new Date();
-    now.setHours(now.getHours() + 4);
-    comanda.fecha_hora_comanda = now;
+    // Guardamos el instante UTC. El frontend convierte a hora Venezuela usando timeZone 'America/Caracas'
+    comanda.fecha_hora_comanda = new Date();
 
     comanda.estado_comanda = EstadoComanda.ABIERTA; // Asegurar estado inicial
     const savedComanda: any = await this.comandaRepository.save(comanda);
