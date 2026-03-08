@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { LoginUsuarioDto } from './dto/login-usuario.dto';
-import { GoogleLoginDto } from './dto/google-login.dto';
+
 import { RegisterRestaurantDto } from './dto/register-restaurant.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -54,12 +54,7 @@ export class AuthController {
     return this.authService.login(req.user, loginUsuarioDto.id_restaurante);
   }
 
-  @Post('google-login')
-  @ApiOperation({ summary: 'Login con Google' })
-  @ApiResponse({ status: 200, description: 'Login exitoso.' })
-  async googleLogin(@Body() googleLoginDto: GoogleLoginDto) {
-    return this.authService.googleLogin(googleLoginDto);
-  }
+
 
   @Post('register-restaurant')
   @ApiOperation({ summary: 'Registrar nuevo restaurante y dueño' })

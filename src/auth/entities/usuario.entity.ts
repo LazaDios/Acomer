@@ -31,13 +31,7 @@ export class Usuario {
   @Column({ unique: true, nullable: true })
   email: string;
 
-  @ApiProperty({
-    description: 'ID de Google para usuarios registrados con Gmail',
-    example: '1234567890',
-    readOnly: true,
-  })
-  @Column({ name: 'google_id', unique: true, nullable: true })
-  google_id: string;
+
 
   @ApiProperty({
     description: 'Contraseña del usuario (hasheada). Opcional si usa Google Login.',

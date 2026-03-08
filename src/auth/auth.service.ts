@@ -189,7 +189,5 @@ export class AuthService {
     return this.usuariosRepository.save(user);
   }
 
-  async googleLogin(googleLoginDto: any) {
-    return { message: 'Google Login revertido para estabilidad local.' };
-  }
+
 }
