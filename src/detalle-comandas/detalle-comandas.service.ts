@@ -187,7 +187,7 @@ export class DetalleComandasService {
   }
 
   async findComandasForCocineroDashboard(restauranteId: number): Promise<Comanda[]> {
-    const estadosCocinero: EstadoComanda[] = [EstadoComanda.ABIERTA, EstadoComanda.PREPARANDO];
+    const estadosCocinero: EstadoComanda[] = [EstadoComanda.ABIERTA, EstadoComanda.PREPARANDO, EstadoComanda.CANCELADA];
     const dateLimit = new Date();
     dateLimit.setDate(dateLimit.getDate() - 60);
 
