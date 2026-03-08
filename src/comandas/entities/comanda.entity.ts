@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { EstadoComanda } from "src/common/enums/comanda-estado.enum";
-import { DetalleComanda } from "src/detalle-comandas/entities/detalle-comanda.entity";
+import { EstadoComanda } from "../../common/enums/comanda-estado.enum";
+import { DetalleComanda } from "../../detalle-comandas/entities/detalle-comanda.entity";
 import { Restaurante } from "../../restaurantes/entities/restaurante.entity";
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from "typeorm";
 

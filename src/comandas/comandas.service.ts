@@ -4,12 +4,12 @@ import { UpdateComandaDto } from './dto/update-comanda.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comanda } from './entities/comanda.entity';
 import { MoreThanOrEqual, Repository } from 'typeorm';
-import { EstadoComanda } from 'src/common/enums/comanda-estado.enum';
-import { ComandaGateway } from 'src/events/comanda.gateway';
+import { EstadoComanda } from '../common/enums/comanda-estado.enum';
+import { ComandaGateway } from '../events/comanda.gateway';
 
 
 
-import { ProductosService } from 'src/productos/productos.service';
+import { ProductosService } from '../productos/productos.service';
 
 @Injectable()
 export class ComandasService {

@@ -3,7 +3,7 @@ import { ProductosService } from './productos.service';
 import { CreateProductoDto } from './dto/create-producto.dto';
 import { UpdateProductoDto } from './dto/update-producto.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { NombreRol } from 'src/auth/entities/rol.entity';
+import { NombreRol } from '../auth/entities/rol.entity';
 import { Producto } from './entities/producto.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';

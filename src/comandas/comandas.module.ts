@@ -3,9 +3,9 @@ import { ComandasService } from './comandas.service';
 import { ComandasController } from './comandas.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Comanda } from './entities/comanda.entity';
-import { DetalleComanda } from 'src/detalle-comandas/entities/detalle-comanda.entity';
-import { EventsModule } from 'src/events/events.module';
-import { ProductosModule } from 'src/productos/productos.module';
+import { DetalleComanda } from '../detalle-comandas/entities/detalle-comanda.entity';
+import { EventsModule } from '../events/events.module';
+import { ProductosModule } from '../productos/productos.module';
 
 
 @Module({

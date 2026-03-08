@@ -1,7 +1,7 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateComandaDto } from './create-comanda.dto';
 import { IsEnum, IsOptional } from 'class-validator';
-import { EstadoComanda } from 'src/common/enums/comanda-estado.enum';
+import { EstadoComanda } from '../../common/enums/comanda-estado.enum';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateComandaDto extends PartialType(CreateComandaDto) {

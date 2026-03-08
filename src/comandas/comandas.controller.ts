@@ -18,26 +18,15 @@ import {
 import { ComandasService } from './comandas.service';
 import { CreateComandaDto } from './dto/create-comanda.dto';
 import { UpdateComandaDto } from './dto/update-comanda.dto';
-import { ComandaGateway } from 'src/events/comanda.gateway';
-import { EstadoComanda } from 'src/common/enums/comanda-estado.enum';
+import { ComandaGateway } from '../events/comanda.gateway';
 import { Comanda } from './entities/comanda.entity';
-
-// --- Importaciones de los módulos de autenticación/autorización ---
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { NombreRol } from 'src/auth/entities/rol.entity';
-
-// --- Importaciones de Swagger ---
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBody,
-  ApiParam,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
-
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { NombreRol } from '../auth/entities/rol.entity';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { EstadoComanda } from '../common/enums/comanda-estado.enum';
+import { ProductosService } from '../productos/productos.service';
 
 @ApiTags('comandas')
 @Controller('comandas')
