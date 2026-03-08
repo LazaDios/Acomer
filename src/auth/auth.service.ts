@@ -206,7 +206,7 @@ export class AuthService implements OnModuleInit {
           nombre: nombreRestaurante,
           direccion: 'Dirección pendiente',
           telefono: '',
-        }, user);
+        });
 
         // 2.1 ACTUALIZAR el usuario con el restaurante_id
         user.restaurante_id = nuevoRestaurante.id_restaurante;
@@ -222,9 +222,7 @@ export class AuthService implements OnModuleInit {
           username: localAdminUsername,
           email: `admin_${nuevoRestaurante.id_restaurante}@local.com`,
           nombre_completo: 'Administrador Local',
-          rol: rolAdmin,
           rol_id: rolAdmin.id_rol,
-          restaurante: nuevoRestaurante,
           restaurante_id: nuevoRestaurante.id_restaurante,
           password: localAdminPassword
         });
@@ -281,13 +279,10 @@ export class AuthService implements OnModuleInit {
       throw new NotFoundException('Rol ADMINISTRADOR no encontrado.');
     }
 
-    // 2. Crear Usuario Admin (Dueño) - SIN restaurante todavía
     const adminUser = this.usuariosRepository.create({
       email,
       username,
-      // cedula, // Removed
-      nombre_completo: username, // Usamos username como nombre por defecto si no se pide nombre completo
-      rol: rolAdmin,
+      nombre_completo: username,
       rol_id: rolAdmin.id_rol,
       password: password,
     });
@@ -299,7 +294,7 @@ export class AuthService implements OnModuleInit {
       nombre: restaurantName,
       direccion: 'Dirección pendiente',
       telefono: '',
-    }, adminUser);
+    });
 
     // 3.1 ACTUALIZAR el adminUser con el restaurante_id
     adminUser.restaurante_id = nuevoRestaurante.id_restaurante;
