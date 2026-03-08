@@ -12,7 +12,8 @@ import {
   BadRequestException,
   Logger,
   UseGuards,
-  Request
+  Request,
+  Query
 } from '@nestjs/common';
 import { ComandasService } from './comandas.service';
 import { CreateComandaDto } from './dto/create-comanda.dto';
@@ -82,9 +83,9 @@ export class ComandasController {
   @ApiResponse({ status: 200, description: 'Lista de comandas del restaurante.', type: [Comanda] })
   @ApiResponse({ status: 401, description: 'No autenticado.' })
   @ApiResponse({ status: 403, description: 'No autorizado (rol incorrecto).' })
-  findAll(@Request() req) {
+  findAll(@Request() req, @Query('days') days?: number) {
     const restauranteId = req.user.id_restaurante;
-    return this.comandasService.findAll(restauranteId);
+    return this.comandasService.findAll(restauranteId, days ? Number(days) : undefined);
   }
 
   @Get(':id')

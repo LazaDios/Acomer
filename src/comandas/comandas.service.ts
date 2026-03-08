@@ -3,7 +3,7 @@ import { CreateComandaDto } from './dto/create-comanda.dto';
 import { UpdateComandaDto } from './dto/update-comanda.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comanda } from './entities/comanda.entity';
-import { Repository } from 'typeorm';
+import { MoreThanOrEqual, Repository } from 'typeorm';
 import { EstadoComanda } from 'src/common/enums/comanda-estado.enum';
 import { ComandaGateway } from 'src/events/comanda.gateway';
 
@@ -164,10 +164,18 @@ export class ComandasService {
 
   //##################################################################################################################
 
-  async findAll(restauranteId: number) {
+  async findAll(restauranteId: number, days: number = 60) {
+    // Calculamos la fecha límite para no traer TODA la historia y agotar la memoria del móvil
+    const dateLimit = new Date();
+    dateLimit.setDate(dateLimit.getDate() - days);
+
     return await this.comandaRepository.find({
-      where: { id_restaurante: restauranteId },
-      relations: ['detallesComanda', 'detallesComanda.producto'] // Asegurar que traemos los detalles
+      where: {
+        id_restaurante: restauranteId,
+        fecha_hora_comanda: MoreThanOrEqual(dateLimit)
+      },
+      relations: ['detallesComanda', 'detallesComanda.producto'],
+      order: { fecha_hora_comanda: 'DESC' } // Ordenamos por fecha descendente
     });
   }
 

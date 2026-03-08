@@ -1,12 +1,13 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, Repository, MoreThanOrEqual } from 'typeorm';
 import { DetalleComanda } from './entities/detalle-comanda.entity';
 import { /*CreateDetalleComandaDto,*/ CreateMultipleDetallesDto } from './dto/create-detalle-comanda.dto'; // Necesitaremos este DTO
 import { Comanda } from '../comandas/entities/comanda.entity'; // Importa la entidad Comanda
 import { Producto } from '../productos/entities/producto.entity';
 import { UpdateDetalleComandaDto } from './dto/update-detalle-comanda.dto';
 import { EstadoComanda } from '../common/enums/comanda-estado.enum';
+import { ComandaGateway } from '../events/comanda.gateway'; // <-- NUEVO
 
 @Injectable()
 export class DetalleComandasService {
@@ -18,6 +19,7 @@ export class DetalleComandasService {
     private readonly comandaRepository: Repository<Comanda>,
     @InjectRepository(Producto) // Inyecta el repositorio de Producto
     private readonly productoRepository: Repository<Producto>,
+    private readonly comandaGateway: ComandaGateway
   ) { }
 
 
@@ -73,6 +75,10 @@ export class DetalleComandasService {
 
     // 5. Recalcular el total de la comanda después de guardar todos los detalles
     await this.recalculateComandaTotalMUCHAS(comanda.comanda_id);
+
+    // 6. Notificar por WebSocket que la comanda cambió (ideal para Cocina y Auditoría)
+    this.comandaGateway.notifyComandaUpdate(comanda.comanda_id, comanda.estado_comanda, 'Nuevos productos agregados');
+    this.comandaGateway.notifyComandaToKitchen(comanda.comanda_id, comanda.estado_comanda, 'Nuevos productos agregados');
 
     return detallesGuardados;
   }
@@ -156,6 +162,13 @@ export class DetalleComandasService {
 
     // Recalcular el total de la comanda
     await this.recalculateComandaTotalMUCHAS(comandaId);
+
+    // Notificar cambios para que los componentes se re-rendericen en TR
+    const comandaBase = await this.comandaRepository.findOne({ where: { comanda_id: comandaId } });
+    if (comandaBase) {
+      this.comandaGateway.notifyComandaUpdate(comandaId, comandaBase.estado_comanda, 'Producto eliminado');
+      this.comandaGateway.notifyComandaToKitchen(comandaId, comandaBase.estado_comanda, 'Producto eliminado');
+    }
   }
 
   async updateSingleDetalleComanda(
@@ -242,6 +255,10 @@ export class DetalleComandasService {
     // Importante: Si usas un campo `activo`, tu `recalculateComandaTotal` debe solo sumar los detalles activos.
     await this.recalculateComandaTotalMUCHAS(comandaId);
 
+    // EMITIR ACTUALIZACIÓN!
+    this.comandaGateway.notifyComandaUpdate(comandaId, comanda.estado_comanda, 'Producto actualizado');
+    this.comandaGateway.notifyComandaToKitchen(comandaId, comanda.estado_comanda, 'Producto actualizado');
+
     return detalleActualizado;
   }
 
@@ -254,14 +271,18 @@ export class DetalleComandasService {
       EstadoComanda.CANCELADA, // Si el cocinero necesita ver las canceladas
     ];
 
+    const dateLimit = new Date();
+    dateLimit.setDate(dateLimit.getDate() - 60);
+
     return this.comandaRepository.find({
       where: {
-        id_restaurante: restauranteId, // <--- FILTRO AGREGADO
-        estado_comanda: In(estadosCocinero),// Filtra las comandas por estos estados
+        id_restaurante: restauranteId,
+        estado_comanda: In(estadosCocinero),
+        fecha_hora_comanda: MoreThanOrEqual(dateLimit)
       },
-      relations: ['detallesComanda', 'detallesComanda.producto'], // <-- ¡Asegúrate de que el nombre de la relación sea 'detalles' si así la tienes en Comanda.entity.ts!
+      relations: ['detallesComanda', 'detallesComanda.producto'],
       order: {
-        comanda_id: 'ASC', // O 'fecha_creacion: 'ASC'' para ordenarlas por la más antigua primero
+        comanda_id: 'ASC',
       }
     });
 
@@ -308,19 +329,22 @@ export class DetalleComandasService {
     // Asumiendo que inyectaste el repositorio de Comanda como 'comandaRepository'
     // Si este servicio solo tiene 'detalleComandaRepository', necesitarás inyectar 'ComandaRepository' también.
 
+    const dateLimit = new Date();
+    dateLimit.setDate(dateLimit.getDate() - 60);
+
     return this.comandaRepository.find({
       where: {
-        id_restaurante: restauranteId, // <--- FILTRO AGREGADO
+        id_restaurante: restauranteId,
         estado_comanda: In([
           EstadoComanda.ABIERTA,
           EstadoComanda.PREPARANDO,
           EstadoComanda.FINALIZADA
         ]),
-        // O simplemente: Not(EstadoComanda.CERRADA) si quieres ver todo menos lo cerrado
+        fecha_hora_comanda: MoreThanOrEqual(dateLimit)
       },
-      relations: ['detallesComanda', 'detallesComanda.producto'], // ¡Importante cargar las relaciones!
+      relations: ['detallesComanda', 'detallesComanda.producto'],
       order: {
-        fecha_hora_comanda: 'DESC', // Las más recientes primero
+        fecha_hora_comanda: 'DESC',
       },
     });
   }

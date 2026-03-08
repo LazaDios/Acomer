@@ -44,7 +44,13 @@ async function bootstrap() {
     })
   );
 
-  app.enableCors(); // Importante para conexiones externas
+  // Habilitar CORS de forma explícita y permisiva para el APK
+  app.enableCors({
+    origin: true, // Permite cualquier origen (incluyendo null de dispositivos móviles)
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+    allowedHeaders: 'Content-Type, Accept, Authorization',
+  });
 
   await app.listen(parseInt(process.env.PORT || '3000', 10), '0.0.0.0');
   console.log(`Application is running on: ${await app.getUrl()}`);

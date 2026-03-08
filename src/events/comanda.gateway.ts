@@ -11,8 +11,9 @@ import { EstadoComanda } from '../common/enums/comanda-estado.enum';
 
 @WebSocketGateway({
   cors: {
-    origin: '*', // ¡Cambia esto a tu dominio de frontend en producción!
+    origin: true,
     methods: ['GET', 'POST'],
+    credentials: true
   }
 })
 export class ComandaGateway implements OnGatewayConnection, OnGatewayDisconnect {
