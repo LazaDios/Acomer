@@ -93,8 +93,10 @@ export class AuthService {
       throw new BadRequestException('El nombre de usuario o email ya está registrado.');
     }
 
-    // 2. Buscar el rol ADMINISTRADOR
-    const rolAdmin = await this.rolesRepository.findOne({ where: { nombre: NombreRol.ADMINISTRADOR } });
+    // 2. Buscar el rol ADMINISTRADOR (nombre: 'administrador')
+    const rolAdmin = await this.rolesRepository.findOne({
+      where: { nombre: NombreRol.ADMINISTRADOR }
+    });
     if (!rolAdmin) {
       this.logger.error('CRÍTICO: No se encontró el rol ADMINISTRADOR en la base de datos.');
       throw new NotFoundException('Rol ADMINISTRADOR no encontrado en la base de datos.');

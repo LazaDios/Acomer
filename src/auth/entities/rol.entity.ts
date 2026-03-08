@@ -23,10 +23,11 @@ export class Rol {
   id_rol: number;
 
   @Column({
-    type: 'enum', // Define el tipo de columna como un ENUM (enumeración)
-    enum: NombreRol, // Usa el enum 'NombreRol' para los valores permitidos
-    unique: true, // Asegura que no haya roles con el mismo nombre
-    nullable: false, // El nombre del rol no puede ser nulo
+    name: 'Nombre', // Especificamos el nombre exacto de la columna en Supabase
+    type: 'enum',
+    enum: NombreRol,
+    unique: true,
+    nullable: false,
   })
   nombre: NombreRol;
 
