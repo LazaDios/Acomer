@@ -121,7 +121,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Listar usuarios del restaurante (Admin)' })
   @ApiResponse({ status: 200, description: 'Lista de usuarios.' })
   async getUsers(@Request() req) {
-    const restauranteId = req.user.id_restaurante;
+    const restauranteId = req.user.restaurante_id;
     return this.authService.findAllByRestaurant(restauranteId);
   }
 
@@ -132,7 +132,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Eliminar usuario del restaurante (Admin)' })
   @ApiResponse({ status: 200, description: 'Usuario eliminado.' })
   async deleteUser(@Request() req, @Param('id') id: string) { // id viene como string params
-    const restauranteId = req.user.id_restaurante;
+    const restauranteId = req.user.restaurante_id;
     return this.authService.remove(+id, restauranteId);
   }
 
@@ -143,7 +143,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Actualizar usuario del restaurante (Admin)' })
   @ApiResponse({ status: 200, description: 'Usuario actualizado.' })
   async updateUser(@Request() req, @Param('id') id: string, @Body() updateUsuarioDto: UpdateUsuarioDto) {
-    const restauranteId = req.user.id_restaurante;
+    const restauranteId = req.user.restaurante_id;
     return this.authService.update(+id, updateUsuarioDto, restauranteId);
   }
 }

@@ -26,8 +26,8 @@ export class CreateUsuarioDto {
   @IsNotEmpty()
   nombre_completo: string;
 
-   @ApiProperty({ description: 'Rol de usuario [1,2,3]', example: 1 })
+  @ApiProperty({ description: 'Rol de usuario [1,2,3]', example: 1 })
   @IsInt()
   @IsNotEmpty()
-  rolId: number; // Este será el id_rol de la entidad Rol
+  rol_id: number; // Este será el id_rol de la entidad Rol
 }

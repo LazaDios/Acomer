@@ -7,6 +7,7 @@ import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { Usuario } from './entities/usuario.entity';
 import { Rol, NombreRol } from './entities/rol.entity';
 import { RestaurantesService } from '../restaurantes/restaurantes.service';
+import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 
 @Injectable()
 export class AuthService {
@@ -21,7 +22,7 @@ export class AuthService {
     private readonly restaurantesService: RestaurantesService,
   ) { }
 
-  async register(createUsuarioDto: CreateUsuarioDto) {
+  async register(createUsuarioDto: CreateUsuarioDto, requestUser?: any) {
     const { password, rol_id, ...userData } = createUsuarioDto;
 
     const existingUser = await this.usuariosRepository.findOneBy({ username: userData.username });
@@ -39,6 +40,7 @@ export class AuthService {
       ...userData,
       password: hashedPassword,
       rol_id: rol.id_rol,
+      restaurante_id: requestUser?.restaurante_id // Si viene un admin registrando, se hereda el restaurante
     });
 
     const savedUser = await this.usuariosRepository.save(user);
@@ -46,11 +48,16 @@ export class AuthService {
     return result;
   }
 
-  async login(user: any) {
+  async login(user: any, restauranteId?: number) {
+    // Si se pasa un restauranteId, validamos que el usuario pertenezca a ese restaurante
+    if (restauranteId && user.restaurante_id !== restauranteId) {
+      throw new UnauthorizedException('No tienes permiso para acceder a este restaurante.');
+    }
+
     const payload = {
       username: user.username,
       sub: user.id_usuario,
-      rol: user.rol?.nombre,
+      rol: user.rol?.nombre || user.rol, // Maneja objeto o string
       restaurante_id: user.restaurante_id
     };
 
@@ -61,7 +68,7 @@ export class AuthService {
         username: user.username,
         email: user.email,
         nombre_completo: user.nombre_completo,
-        rol: user.rol?.nombre,
+        rol: user.rol?.nombre || user.rol,
         restaurante_id: user.restaurante_id,
       },
       restaurant: user.restaurante,
@@ -84,7 +91,6 @@ export class AuthService {
   async registerRestaurant(data: any) {
     const { email, username, password, restaurantName } = data;
 
-    // 1. Verificar si ya existe el usuario o email
     const existingUser = await this.usuariosRepository.findOne({
       where: [{ username }, { email }]
     });
@@ -93,16 +99,12 @@ export class AuthService {
       throw new BadRequestException('El nombre de usuario o email ya está registrado.');
     }
 
-    // 2. Buscar el rol ADMINISTRADOR (nombre: 'administrador')
-    const rolAdmin = await this.rolesRepository.findOne({
-      where: { nombre: NombreRol.ADMINISTRADOR }
-    });
+    const rolAdmin = await this.rolesRepository.findOne({ where: { nombre: NombreRol.ADMINISTRADOR } });
     if (!rolAdmin) {
       this.logger.error('CRÍTICO: No se encontró el rol ADMINISTRADOR en la base de datos.');
       throw new NotFoundException('Rol ADMINISTRADOR no encontrado en la base de datos.');
     }
 
-    // 3. Crear el Usuario (SIN restaurante todavía para no tener FK circular en el primer paso si falla)
     const hashedPassword = await bcrypt.hash(password, 10);
     const adminUser = this.usuariosRepository.create({
       email,
@@ -115,49 +117,56 @@ export class AuthService {
     await this.usuariosRepository.save(adminUser);
 
     try {
-      // 4. Crear el Restaurante
       const nuevoRestaurante = await this.restaurantesService.create({
         nombre: restaurantName,
         direccion: 'Dirección pendiente',
         telefono: '',
       });
 
-      // 5. Vincular Usuario y Restaurante
       adminUser.restaurante_id = nuevoRestaurante.id_restaurante;
       await this.usuariosRepository.save(adminUser);
 
       this.logger.log(`Restaurante "${restaurantName}" registrado con éxito.`);
 
-      // 6. Login Automático
-      const payload = {
-        username: adminUser.username,
-        sub: adminUser.id_usuario,
-        rol: rolAdmin.nombre,
-        restaurante_id: nuevoRestaurante.id_restaurante
-      };
-
-      return {
-        access_token: this.jwtService.sign(payload),
-        restaurant: nuevoRestaurante,
-        usuario: {
-          id_usuario: adminUser.id_usuario,
-          username: adminUser.username,
-          rol: rolAdmin.nombre,
-          restaurante_id: nuevoRestaurante.id_restaurante
-        }
-      };
+      return this.login(adminUser); // Usamos el método login común para devolver el token
 
     } catch (error) {
       this.logger.error(`Error en registro de restaurante: ${error.message}`);
-      // Si falla la creación del restaurante, podríamos borrar al usuario, 
-      // pero por ahora lo dejamos para depurar.
       throw error;
     }
   }
 
-  async googleLogin(idToken: string) {
-    // Implementación de googleLogin si es necesaria, similar a la anterior pero consistente
-    // ...
-    return { message: 'Google Login pendiente de ajustar si se requiere' };
+  async findAllByRestaurant(restauranteId: number) {
+    return this.usuariosRepository.find({
+      where: { restaurante_id: restauranteId },
+      relations: ['rol']
+    });
+  }
+
+  async remove(id: number, restauranteId: number) {
+    const user = await this.usuariosRepository.findOne({
+      where: { id_usuario: id, restaurante_id: restauranteId }
+    });
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+    return this.usuariosRepository.remove(user);
+  }
+
+  async update(id: number, updateUsuarioDto: UpdateUsuarioDto, restauranteId: number) {
+    const user = await this.usuariosRepository.findOne({
+      where: { id_usuario: id, restaurante_id: restauranteId }
+    });
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+
+    if (updateUsuarioDto.password) {
+      updateUsuarioDto.password = await bcrypt.hash(updateUsuarioDto.password, 10);
+    }
+
+    Object.assign(user, updateUsuarioDto);
+    return this.usuariosRepository.save(user);
+  }
+
+  async googleLogin(googleLoginDto: any) {
+    // Implementación mínima para evitar errores de compilación
+    return { message: 'Google Login debe ser implementado con su lógica específica si se usa.' };
   }
 }
