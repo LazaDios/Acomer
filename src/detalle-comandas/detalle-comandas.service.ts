@@ -175,4 +175,45 @@ export class DetalleComandasService {
       order: { fecha_hora_comanda: 'DESC' }
     });
   }
+
+  async findOneWithDetails(id: number): Promise<Comanda> {
+    const comanda = await this.comandaRepository.findOne({
+      where: { comanda_id: id },
+      relations: ['detallesComanda', 'detallesComanda.producto'],
+      order: { detallesComanda: { id_detalle_comanda: 'ASC' } },
+    });
+    if (!comanda) throw new NotFoundException(`Comanda con ID ${id} no encontrada.`);
+    return comanda;
+  }
+
+  async findComandasForCocineroDashboard(restauranteId: number): Promise<Comanda[]> {
+    const estadosCocinero: EstadoComanda[] = [EstadoComanda.ABIERTA, EstadoComanda.PREPARANDO];
+    const dateLimit = new Date();
+    dateLimit.setDate(dateLimit.getDate() - 60);
+
+    return this.comandaRepository.find({
+      where: {
+        restaurante_id: restauranteId,
+        estado_comanda: In(estadosCocinero),
+        fecha_hora_comanda: MoreThanOrEqual(dateLimit)
+      },
+      relations: ['detallesComanda', 'detallesComanda.producto'],
+      order: { comanda_id: 'ASC' }
+    });
+  }
+
+  async findComandasForMesoneroDashboard(restauranteId: number): Promise<Comanda[]> {
+    const dateLimit = new Date();
+    dateLimit.setDate(dateLimit.getDate() - 60);
+
+    return this.comandaRepository.find({
+      where: {
+        restaurante_id: restauranteId,
+        estado_comanda: In([EstadoComanda.ABIERTA, EstadoComanda.PREPARANDO, EstadoComanda.FINALIZADA]),
+        fecha_hora_comanda: MoreThanOrEqual(dateLimit)
+      },
+      relations: ['detallesComanda', 'detallesComanda.producto'],
+      order: { fecha_hora_comanda: 'DESC' }
+    });
+  }
 }

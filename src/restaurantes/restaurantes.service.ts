@@ -21,7 +21,7 @@ export class RestaurantesService {
 
         // Asignar el restaurante al usuario creador (Dueño)
         usuario.restaurante = nuevoRestaurante;
-        usuario.id_restaurante = nuevoRestaurante.id_restaurante; // CRÍTICO: asignar también el ID
+        usuario.restaurante_id = nuevoRestaurante.id_restaurante; // CRÍTICO: asignar también el ID
         await this.usuarioRepository.save(usuario);
 
         return nuevoRestaurante;
