@@ -24,11 +24,10 @@ export class Rol {
 
   @Column({
     name: 'Nombre',
-    type: 'varchar', // Cambiamos de 'enum' a 'varchar' para evitar el choque en Supabase
     unique: true,
     nullable: false,
   })
-  nombre: NombreRol;
+  nombre: string; // Usamos string simple para máxima compatibilidad
 
   /**
    * Relación One-to-Many con la entidad Usuario.
