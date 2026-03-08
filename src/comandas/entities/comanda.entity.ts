@@ -93,11 +93,11 @@ export class Comanda {
   fecha_hora_comanda: Date;
 
   @ManyToOne(() => Restaurante, (restaurante) => restaurante.comandas, { nullable: true })
-  @JoinColumn({ name: 'id_restaurante' })
+  @JoinColumn({ name: 'restaurante_id' })
   restaurante: Restaurante;
 
-  @Column({ nullable: true })
-  id_restaurante: number;
+  @Column({ name: 'restaurante_id', nullable: true })
+  restaurante_id: number;
 
 
 

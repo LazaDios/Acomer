@@ -68,8 +68,8 @@ export class AuthService implements OnModuleInit {
 
     // Obtener el restaurante del usuario autenticado si existe
     let restauranteId: number | undefined;
-    if (authenticatedUser?.id_restaurante) {
-      restauranteId = authenticatedUser.id_restaurante;
+    if (authenticatedUser?.restaurante_id) {
+      restauranteId = authenticatedUser.restaurante_id;
     }
 
     const nuevoUsuario = this.usuariosRepository.create({
@@ -78,7 +78,7 @@ export class AuthService implements OnModuleInit {
       nombre_completo,
       rol_id: rolId,
       rol,
-      ...(restauranteId && { id_restaurante: restauranteId }),
+      ...(restauranteId && { restaurante_id: restauranteId }),
     });
 
     await nuevoUsuario.hashPassword();
@@ -104,15 +104,15 @@ export class AuthService implements OnModuleInit {
     // Si viene un id desde el frontend, verificamos que coincida.
     if (restauranteId) {
       const rId = Number(restauranteId);
-      // El usuario debe tener ese id_restaurante asociado
-      if (usuario.id_restaurante !== rId) {
+      // El usuario debe tener ese restaurante_id asociado
+      if (usuario.restaurante_id !== rId) {
         // Por seguridad (para no revelar que el usuario existe en otro restaurante),
         // devolvemos un mensaje genérico de credenciales inválidas.
         throw new UnauthorizedException('Credenciales inválidas.');
       }
     }
 
-    const payloadRestauranteId = usuario.restaurante?.id_restaurante || usuario.id_restaurante;
+    const payloadRestauranteId = usuario.restaurante?.id_restaurante || usuario.restaurante_id;
 
     // Buscamos el objeto restaurante completo si no viene cargado
     let fullRestaurant: Restaurante | null | undefined = usuario.restaurante;
@@ -209,7 +209,7 @@ export class AuthService implements OnModuleInit {
         }, user);
 
         // 2.1 ACTUALIZAR el usuario con el restaurante_id
-        user.id_restaurante = nuevoRestaurante.id_restaurante;
+        user.restaurante_id = nuevoRestaurante.id_restaurante;
         user.restaurante = nuevoRestaurante;
         await this.usuariosRepository.save(user);
         this.logger.log(`Usuario Google actualizado con restaurante_id: ${nuevoRestaurante.id_restaurante}`);
@@ -225,7 +225,7 @@ export class AuthService implements OnModuleInit {
           rol: rolAdmin,
           rol_id: rolAdmin.id_rol,
           restaurante: nuevoRestaurante,
-          id_restaurante: nuevoRestaurante.id_restaurante,
+          restaurante_id: nuevoRestaurante.id_restaurante,
           password: localAdminPassword
         });
 
@@ -302,7 +302,7 @@ export class AuthService implements OnModuleInit {
     }, adminUser);
 
     // 3.1 ACTUALIZAR el adminUser con el restaurante_id
-    adminUser.id_restaurante = nuevoRestaurante.id_restaurante;
+    adminUser.restaurante_id = nuevoRestaurante.id_restaurante;
     adminUser.restaurante = nuevoRestaurante;
     await this.usuariosRepository.save(adminUser);
     this.logger.log(`Admin (Dueño) actualizado con restaurante_id: ${nuevoRestaurante.id_restaurante}`);
@@ -324,7 +324,7 @@ export class AuthService implements OnModuleInit {
 
   async findAllByRestaurant(restauranteId: number): Promise<Usuario[]> {
     return this.usuariosRepository.find({
-      where: { id_restaurante: restauranteId },
+      where: { restaurante_id: restauranteId },
       order: { nombre_completo: 'ASC' }
     });
   }
@@ -336,7 +336,7 @@ export class AuthService implements OnModuleInit {
       throw new NotFoundException('Usuario no encontrado.');
     }
 
-    if (userToDelete.id_restaurante !== adminRestauranteId) {
+    if (userToDelete.restaurante_id !== adminRestauranteId) {
       throw new ForbiddenException('No tienes permisos para eliminar a este usuario (es de otro restaurante).');
     }
 
@@ -353,7 +353,7 @@ export class AuthService implements OnModuleInit {
       throw new NotFoundException('Usuario no encontrado.');
     }
 
-    if (user.id_restaurante !== adminRestauranteId) {
+    if (user.restaurante_id !== adminRestauranteId) {
       throw new ForbiddenException('No tienes permisos para editar a este usuario.');
     }
 

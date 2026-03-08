@@ -30,6 +30,6 @@ export class DetalleComanda {
   @Column({ type: 'varchar', length: 255, nullable: true }) // Permite que sea opcional
   descripcion: string;
 
-  @Column({ nullable: true })
-  id_restaurante: number;
+  @Column({ name: 'restaurante_id', nullable: true })
+  restaurante_id: number;
 }

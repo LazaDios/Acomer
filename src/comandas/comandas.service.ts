@@ -33,7 +33,7 @@ export class ComandasService {
 
     const comanda = this.comandaRepository.create({
       ...createComandaDto,
-      id_restaurante: restauranteId
+      restaurante_id: restauranteId
     });
 
     // FORZAR HORA VENEZUELA (America/Caracas) de manera robusta
@@ -61,7 +61,7 @@ export class ComandasService {
     // 1. Crear la Comanda
     const comanda = this.comandaRepository.create({
       mesa,
-      id_restaurante: restauranteId,
+      restaurante_id: restauranteId,
       estado_comanda: EstadoComanda.ABIERTA,
     });
     const savedComanda = await this.comandaRepository.save(comanda);
@@ -171,7 +171,7 @@ export class ComandasService {
 
     return await this.comandaRepository.find({
       where: {
-        id_restaurante: restauranteId,
+        restaurante_id: restauranteId,
         fecha_hora_comanda: MoreThanOrEqual(dateLimit)
       },
       relations: ['detallesComanda', 'detallesComanda.producto'],

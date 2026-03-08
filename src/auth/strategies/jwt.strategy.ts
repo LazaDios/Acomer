@@ -38,8 +38,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       id_usuario: payload.id_usuario,
       username: payload.username,
       rol: { nombre: payload.rol },
-      id_restaurante: payload.restaurante_id,
-      nombre_completo: payload.nombre_completo || 'N/A',
+      restaurante_id: payload.restaurante_id,
+      nombre_completo: payload.nombre_completo,
     } as Usuario;
   }
 }

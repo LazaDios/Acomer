@@ -28,7 +28,7 @@ export class ProductosController {
   @ApiResponse({ status: 403, description: 'No autorizado (solo administradores pueden crear productos).' })
   @ApiBody({ type: CreateProductoDto, description: 'Datos para crear un nuevo producto.' })
   create(@Body() createProductoDto: CreateProductoDto, @Request() req) {
-    const restauranteId = req.user.id_restaurante;
+    const restauranteId = req.user.restaurante_id;
     if (!restauranteId) {
       // Opcional: lanzar excepción si no tiene restaurante (ej: es un superadmin global sin restaurante asignado)
       // O permitirlo si la lógica de negocio lo requiere. 
@@ -45,7 +45,7 @@ export class ProductosController {
   @ApiResponse({ status: 401, description: 'No autenticado.' })
   @ApiResponse({ status: 403, description: 'No autorizado.' })
   findAll(@Request() req) {
-    const restauranteId = req.user.id_restaurante;
+    const restauranteId = req.user.restaurante_id;
     return this.productosService.findAll(restauranteId);
   }
 
