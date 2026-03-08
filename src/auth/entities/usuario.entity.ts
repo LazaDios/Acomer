@@ -65,23 +65,18 @@ export class Usuario {
     description: 'Rol del usuario (relación con la tabla roles)',
     type: () => Rol,
   })
-  @ManyToOne(() => Rol, (rol) => rol.usuarios, { eager: true, nullable: false })
+  @ManyToOne(() => Rol, (rol) => rol.usuarios, { eager: true, nullable: true })
   @JoinColumn({ name: 'rol_id' })
   rol: Rol;
 
-  @ApiProperty({
-    description: 'ID de la clave foránea del rol del usuario',
-    example: 2,
-    type: Number,
-  })
-  @Column({ name: 'rol_id', type: 'int', nullable: false })
+  @Column({ name: 'rol_id', type: 'int', nullable: true })
   rol_id: number;
 
   @ManyToOne(() => Restaurante, (restaurante) => restaurante.usuarios, { nullable: true })
   @JoinColumn({ name: 'restaurante_id' })
   restaurante: Restaurante;
 
-  @Column({ name: 'restaurante_id', nullable: true })
+  @Column({ name: 'restaurante_id', type: 'int', nullable: true })
   restaurante_id: number;
 
   async hashPassword() {
