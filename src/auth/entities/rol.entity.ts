@@ -23,9 +23,8 @@ export class Rol {
   id_rol: number;
 
   @Column({
-    name: 'Nombre', // Especificamos el nombre exacto de la columna en Supabase
-    type: 'enum',
-    enum: NombreRol,
+    name: 'Nombre',
+    type: 'varchar', // Cambiamos de 'enum' a 'varchar' para evitar el choque en Supabase
     unique: true,
     nullable: false,
   })
