@@ -2,6 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { EstadoComanda } from "../../common/enums/comanda-estado.enum";
 import { DetalleComanda } from "../../detalle-comandas/entities/detalle-comanda.entity";
 import { Restaurante } from "../../restaurantes/entities/restaurante.entity";
+import { Usuario } from "../../auth/entities/usuario.entity";
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from "typeorm";
 
 @Entity()
@@ -32,9 +33,13 @@ export class Comanda {
   nombre_mesonero: string;
 
   @ApiProperty({
-    description: 'ID del usuario que creó la comanda',
+    description: 'ID o Perfil del usuario que creó la comanda',
     example: 1,
   })
+  @ManyToOne(() => Usuario, { nullable: true })
+  @JoinColumn({ name: 'id_usuario' })
+  usuario: Usuario;
+
   @Column({ nullable: true })
   id_usuario: number;
 

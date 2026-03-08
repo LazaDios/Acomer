@@ -37,6 +37,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return {
       id_usuario: payload.sub,
       username: payload.username,
+      nombre_completo: payload.nombre_completo,
       rol: { nombre: payload.rol }, // Asegurar compatibilidad con el RolesGuard
       id_restaurante: payload.id_restaurante,
     };

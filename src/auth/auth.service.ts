@@ -81,7 +81,8 @@ export class AuthService {
       username: user.username,
       sub: user.id_usuario,
       rol: nombreRol,
-      id_restaurante: user.id_restaurante
+      id_restaurante: user.id_restaurante,
+      nombre_completo: user.nombre_completo
     };
 
     return {

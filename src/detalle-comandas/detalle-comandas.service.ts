@@ -171,7 +171,7 @@ export class DetalleComandasService {
         id_restaurante: restauranteId,
         fecha_hora_comanda: MoreThanOrEqual(dateLimit)
       },
-      relations: ['detallesComanda', 'detallesComanda.producto'],
+      relations: ['detallesComanda', 'detallesComanda.producto', 'usuario'],
       order: { fecha_hora_comanda: 'DESC' }
     });
   }
@@ -179,7 +179,7 @@ export class DetalleComandasService {
   async findOneWithDetails(id: number): Promise<Comanda> {
     const comanda = await this.comandaRepository.findOne({
       where: { comanda_id: id },
-      relations: ['detallesComanda', 'detallesComanda.producto'],
+      relations: ['detallesComanda', 'detallesComanda.producto', 'usuario'],
       order: { detallesComanda: { id_detalle_comanda: 'ASC' } },
     });
     if (!comanda) throw new NotFoundException(`Comanda con ID ${id} no encontrada.`);
@@ -197,7 +197,7 @@ export class DetalleComandasService {
         estado_comanda: In(estadosCocinero),
         fecha_hora_comanda: MoreThanOrEqual(dateLimit)
       },
-      relations: ['detallesComanda', 'detallesComanda.producto'],
+      relations: ['detallesComanda', 'detallesComanda.producto', 'usuario'],
       order: { comanda_id: 'ASC' }
     });
   }
@@ -212,7 +212,7 @@ export class DetalleComandasService {
         estado_comanda: In([EstadoComanda.ABIERTA, EstadoComanda.PREPARANDO, EstadoComanda.FINALIZADA]),
         fecha_hora_comanda: MoreThanOrEqual(dateLimit)
       },
-      relations: ['detallesComanda', 'detallesComanda.producto'],
+      relations: ['detallesComanda', 'detallesComanda.producto', 'usuario'],
       order: { fecha_hora_comanda: 'DESC' }
     });
   }

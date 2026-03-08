@@ -174,7 +174,7 @@ export class ComandasService {
         id_restaurante: restauranteId,
         fecha_hora_comanda: MoreThanOrEqual(dateLimit)
       },
-      relations: ['detallesComanda', 'detallesComanda.producto'],
+      relations: ['detallesComanda', 'detallesComanda.producto', 'usuario'],
       order: { fecha_hora_comanda: 'DESC' } // Ordenamos por fecha descendente
     });
   }
